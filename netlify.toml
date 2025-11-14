@@ -9,8 +9,8 @@
   # Environment variables are set in Netlify dashboard
 
 [build.environment]
-  # Node version
-  NODE_VERSION = "18"
+  # Node version (Supabase requires Node 20+)
+  NODE_VERSION = "20"
 
 # SPA redirect rules - handle client-side routing
 [[redirects]]
