@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS public.user_credits (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  credits_remaining INTEGER NOT NULL DEFAULT 50,
+  credits_remaining INTEGER NOT NULL DEFAULT 7,
   total_credits_used INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -58,9 +58,9 @@ BEGIN
   )
   ON CONFLICT (id) DO NOTHING;
 
-  -- Create credits entry with 50 free credits
+  -- Create credits entry with 7 free credits
   INSERT INTO public.user_credits (user_id, credits_remaining, total_credits_used)
-  VALUES (NEW.id, 50, 0)
+  VALUES (NEW.id, 7, 0)
   ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;
