@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  color-scheme: light;
+}
+
+html,body,#root{
+  height:100%;
+}
+
+body{
+  @apply bg-neutral-50 text-neutral-800 font-sans;
+}
+
+.card{
+  @apply bg-white rounded-2xl p-6 shadow-soft;
+}
