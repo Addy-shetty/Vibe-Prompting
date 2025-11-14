@@ -1,215 +1,90 @@
-# 🔒 Security Implementation Guide
+# Security Policy
 
-## Overview
-This document outlines all security measures implemented in the Vibe Prompting application.
+## 🔒 Security Overview
 
----
+Vibe Prompting takes security seriously. This document outlines our security measures and how to report vulnerabilities.
 
-## ✅ Implemented Security Features
+## 🛡️ Security Features
 
-### 1. **Input Validation & Sanitization**
+### Database Security
+- **Row Level Security (RLS)** enabled on all tables
+- **IDOR Protection**: Users can only access their own data
+- **Secure Functions**: PostgreSQL functions use `SECURITY DEFINER`
+- **Input Validation**: XSS and SQL injection prevention
 
-#### Frontend Validation (Zod)
-- **Email**: Max 320 characters (RFC 5321), valid email format, sanitized
-- **Username**: 3-20 characters, alphanumeric + hyphens/underscores only
-- **Password**: 8-128 characters, requires:
-  - At least 1 uppercase letter
-  - At least 1 lowercase letter
-  - At least 1 number
-  - At least 1 special character (@$!%*?&#^()_+=\-)
-  - Not a common password
+### Authentication
+- Supabase Auth with email verification
+- Secure session management
+- Password hashing with bcrypt
+- JWT token validation
 
-#### Sanitization (`src/lib/security.ts`)
-- XSS prevention (removes `<script>`, `javascript:`, event handlers)
-- SQL injection detection
-- Input trimming and normalization
+### API Security
+- Environment variables for sensitive keys
+- Rate limiting on API endpoints
+- CORS configuration
+- Secure headers
 
-### 2. **Authentication Security**
+## 📋 Supported Versions
 
-#### Supabase Auth
-- **Password Encryption**: Bcrypt hashing (handled by Supabase)
-- **JWT Tokens**: Secure session management
-- **OAuth Integration**: Google & GitHub (trusted providers)
-- **Email Verification**: Can be enabled in Supabase dashboard
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.x.x   | :white_check_mark: |
 
-#### Rate Limiting
-- **Login**: 5 attempts per minute per user
-- **Signup**: 3 attempts per minute per user
-- **Client-side implementation** with future server-side recommendation
+## 🚨 Reporting a Vulnerability
 
-### 3. **Username & Email Uniqueness**
+If you discover a security vulnerability, please follow these steps:
 
-- **Real-time username availability check** with debouncing (500ms)
-- **Visual feedback**: ✅ Available / ❌ Taken / ⏳ Checking
-- **Database-level unique constraints** on profiles table
+### Where to Report
+**Email**: Harshithms@gmail.com
 
-### 4. **Password Security**
+### What to Include
+1. **Description**: Clear description of the vulnerability
+2. **Steps to Reproduce**: Detailed steps to replicate the issue
+3. **Impact**: Potential impact and severity
+4. **Proof of Concept**: Code or screenshots (if applicable)
+5. **Suggested Fix**: Your recommendations (optional)
 
-#### Password Strength Indicator
-- **5-level strength meter**: Very Weak → Weak → Fair → Good → Strong
-- **Real-time feedback**: Shows missing requirements
-- **Visual indicators**: Color-coded strength bars
-- **Character counter**: Shows 0/128 limit
+### Response Timeline
+- **Initial Response**: Within 48 hours
+- **Status Update**: Every 5 business days
+- **Resolution Target**: 30 days for critical issues
 
-#### Best Practices
-- Minimum 8 characters (recommended 12+)
-- Blocks common passwords
-- No password storage in frontend state
-- Passwords never logged or exposed
+### What to Expect
+- **Accepted**: We'll work on a fix and credit you in release notes
+- **Declined**: We'll explain why it's not considered a vulnerability
+- **Duplicate**: We'll reference the original report
 
-### 5. **Injection Attack Prevention**
+## 🔐 Security Best Practices
 
-#### SQL Injection
-- **Supabase RLS**: All queries go through Row Level Security
-- **Parameterized queries**: Supabase client handles escaping
-- **Pattern detection**: Blocks SQL keywords (SELECT, DROP, UNION, etc.)
+### For Users
+- Use strong, unique passwords
+- Enable two-factor authentication (when available)
+- Keep your browser updated
+- Don't share API keys
 
-#### XSS (Cross-Site Scripting)
-- **Input sanitization**: Removes dangerous HTML/JS
-- **Content Security Policy** (recommended to add)
-- **React auto-escaping**: JSX prevents most XSS by default
+### For Contributors
+- Never commit sensitive data (.env files)
+- Use environment variables for secrets
+- Follow secure coding practices
+- Run security linters before PR
 
-#### CSRF (Cross-Site Request Forgery)
-- **SameSite cookies**: Supabase sets secure cookies
-- **Token-based auth**: JWT tokens in headers
-- **CORS configuration**: Restrict allowed origins in Supabase
+## 📚 Security Documentation
 
-### 6. **Database Security**
+For detailed security implementation:
+- [Security Implementation Guide](docs/SECURITY_IMPLEMENTATION_FULL.md)
+- [Database Setup](docs/SUPABASE_SETUP.md)
 
-#### Row Level Security (RLS)
-```sql
--- Profiles: Users can only edit their own profile
-CREATE POLICY "profiles_update_policy"
-  ON public.profiles
-  FOR UPDATE
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+## 🏆 Recognition
 
--- Prompts: Users can only access public prompts OR their own
-CREATE POLICY "prompts_select_policy"
-  ON public.prompts
-  FOR SELECT
-  USING (is_public = true OR auth.uid() = user_id);
-```
+We appreciate responsible disclosure. Security researchers will be:
+- Credited in release notes
+- Listed in our security acknowledgments
+- Given appropriate recognition
 
-#### Trigger Security
-- **SECURITY DEFINER**: Triggers run with elevated privileges
-- **Service role policy**: Allows profile auto-creation
-- **Exception handling**: Graceful failure without exposing details
+## 📞 Contact
 
-### 7. **Character Limits**
-
-| Field | Min | Max | Reason |
-|-------|-----|-----|--------|
-| Username | 3 | 20 | Usability + DB efficiency |
-| Email | 1 | 320 | RFC 5321 standard |
-| Password | 8 | 128 | Security + prevent DoS |
-| Prompt Title | 3 | 100 | Readability |
-| Prompt Content | 10 | 5000 | Prevent spam/abuse |
-| Category | 1 | 50 | Standard categories |
-
-### 8. **Frontend Security Measures**
-
-- **No sensitive data in localStorage**: Only session tokens (httpOnly)
-- **Environment variables**: API keys in `.env` (never committed)
-- **HTTPS enforcement**: Production must use HTTPS
-- **Secure headers**: Recommend adding helmet.js for production
+For security concerns: Harshithms@gmail.com
 
 ---
 
-## 🛡️ Additional Recommendations (Production)
-
-### Server-Side Security
-1. **Rate limiting**: Use Supabase Edge Functions with Upstash Redis
-2. **IP blocking**: Block repeated failed login attempts
-3. **CAPTCHA**: Add reCAPTCHA v3 for signup/login
-4. **Email verification**: Enable in Supabase (Authentication → Providers → Email)
-
-### Content Security Policy (CSP)
-Add to `index.html`:
-```html
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https:;
-  connect-src 'self' https://*.supabase.co;
-">
-```
-
-### HTTPS & SSL
-- Use Vercel/Netlify for automatic HTTPS
-- Enable HSTS (HTTP Strict Transport Security)
-- Set secure cookie flags in Supabase
-
-### Monitoring & Logging
-- **Supabase Logs**: Monitor auth failures
-- **Error tracking**: Sentry or LogRocket
-- **Analytics**: Privacy-focused (Plausible, Fathom)
-
-### Dependency Security
-```bash
-# Check for vulnerabilities
-npm audit
-
-# Auto-fix
-npm audit fix
-
-# Keep dependencies updated
-npm outdated
-```
-
----
-
-## 🔍 Security Audit Checklist
-
-- [x] Input validation (Zod schemas)
-- [x] Password strength requirements
-- [x] Username uniqueness check
-- [x] SQL injection prevention
-- [x] XSS prevention
-- [x] CSRF protection (JWT tokens)
-- [x] Rate limiting (client-side)
-- [x] Character limits
-- [x] Sanitization utilities
-- [x] Row Level Security (RLS)
-- [x] Secure password hashing
-- [ ] CAPTCHA (recommended for production)
-- [ ] Email verification (can enable in Supabase)
-- [ ] Server-side rate limiting (production)
-- [ ] Content Security Policy (production)
-- [ ] Security headers (production)
-- [ ] Penetration testing (before launch)
-
----
-
-## 📚 Security Resources
-
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Supabase Security Best Practices](https://supabase.com/docs/guides/auth/security-best-practices)
-- [Web Security by MDN](https://developer.mozilla.org/en-US/docs/Web/Security)
-- [JWT Security](https://jwt.io/introduction)
-
----
-
-## 🚨 Reporting Security Issues
-
-If you discover a security vulnerability:
-1. **Do NOT** create a public issue
-2. Email: security@yourdomain.com
-3. Provide details and steps to reproduce
-4. Allow 48 hours for response
-
----
-
-## 📝 Compliance Notes
-
-- **GDPR**: Users can delete their account (deletes all data)
-- **CCPA**: Privacy policy required
-- **Data encryption**: At rest (Supabase) and in transit (HTTPS)
-- **Password storage**: Never stored in plaintext (bcrypt hashed)
-
----
-
-**Last Updated**: November 13, 2025
-**Security Level**: Production-Ready with Additional Recommendations
+**Thank you for helping keep Vibe Prompting secure!** 🔒

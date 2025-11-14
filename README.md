@@ -145,10 +145,12 @@ vibe-prompting/
 
 ## 📖 Documentation
 
-- **[Security Guide](./SECURITY.md)** - Security implementation details
-- **[Credits System](./CREDITS_SYSTEM.md)** - How credits work
-- **[Database Schema](./DATABASE.md)** - Database structure
-- **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment
+- **[Security Policy](./SECURITY.md)** - Vulnerability reporting & security measures
+- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
+- **[Authentication Guide](./docs/AUTH_GUIDE.md)** - Auth implementation
+- **[Credits System](./docs/CREDITS_SYSTEM.md)** - Credit system details
+- **[Database Setup](./docs/SUPABASE_SETUP.md)** - Supabase configuration
+- **[Security Implementation](./docs/SECURITY_IMPLEMENTATION_FULL.md)** - Complete security guide
 
 ---
 
