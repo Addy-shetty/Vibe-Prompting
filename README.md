@@ -6,121 +6,175 @@
 
 Transform your ideas into powerful AI prompts instantly. Built with React, TypeScript, and Supabase.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3-61dafb)](https://reactjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)](https://supabase.com/)
 
-[Demo](#) • [Documentation](./SECURITY.md) • [Report Bug](https://github.com/Addy-shetty/Vibe-Prompting/issues) • [Request Feature](https://github.com/Addy-shetty/Vibe-Prompting/issues)
+[🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🤝 Contributing](./CONTRIBUTING.md) • [🔒 Security](./SECURITY.md)
 
 </div>
 
 ---
 
+## 📑 Table of Contents
+
+- [✨ Features](#-features)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [🚀 Quick Start](#-quick-start)
+- [📁 Project Structure](#-project-structure)
+- [📖 Documentation](#-documentation)
+- [🎮 Usage Guide](#-usage-guide)
+- [🤝 Contributing](#-contributing)
+- [📝 License](#-license)
+- [📧 Contact](#-contact)
+
+---
+
 ## ✨ Features
 
-### 🚀 Core Features
-- **AI Prompt Generation** - Generate high-quality prompts using Google Gemini 2.0 Flash or OpenRouter Llama 3.2
-- **Smart Categories** - 14 specialized categories (Frontend, Backend, DevOps, Security, etc.)
-- **Tag System** - Organize prompts with up to 5 custom tags per prompt
-- **Credit System** - Fair usage with 50 free credits for signed-up users
-- **Public Gallery** - Browse and discover community prompts
-- **Real-time Streaming** - See your prompts being generated in real-time
+<table>
+<tr>
+<td width="50%">
+
+### 🚀 Core Capabilities
+- ✅ **AI Prompt Generation** - Powered by Google Gemini 2.0 Flash & OpenRouter
+- ✅ **14 Specialized Categories** - Frontend, Backend, DevOps, Security & more
+- ✅ **Smart Tag System** - Organize with up to 5 tags per prompt
+- ✅ **Real-time Streaming** - Watch prompts generate live
+- ✅ **Public Gallery** - Discover community creations
+
+</td>
+<td width="50%">
 
 ### 🎯 User Experience
-- **Anonymous Preview** - Try 3 free generations without signup
-- **Dark/Light Theme** - Beautiful UI that adapts to your preference
-- **Copy to Clipboard** - One-click copying of generated prompts
-- **Responsive Design** - Works perfectly on desktop, tablet, and mobile
-- **GitHub-style Docs** - Comprehensive documentation with next/prev navigation
+- ✅ **Anonymous Preview** - 3 free generations, no signup needed
+- ✅ **50 Free Credits** - For registered users
+- ✅ **Dark/Light Theme** - Beautiful adaptive UI
+- ✅ **One-Click Copy** - Instant clipboard functionality
+- ✅ **Fully Responsive** - Desktop, tablet & mobile ready
 
-### 🔒 Security
-- **Row Level Security (RLS)** - Database-level access control
-- **IDOR Protection** - Users can only modify their own data
-- **Input Validation** - Zod schemas for all inputs
-- **XSS Prevention** - Sanitization for all user content
-- **Rate Limiting** - Client-side protection against abuse
-- **Password Strength** - Requirements enforced with visual feedback
+</td>
+</tr>
+</table>
 
-### 📊 Credits System
-| User Type | Generations | Prompt Views | Storage |
-|-----------|-------------|--------------|---------|
-| Anonymous | 3 free | 3 free views | localStorage |
-| Signed Up | 50 credits | Unlimited | Database |
+### 🔒 Enterprise-Grade Security
+Built with security at its core. [Learn more →](./SECURITY.md)
+
+- ✅ **Row Level Security (RLS)** - Database-level access control
+- ✅ **IDOR Protection** - Users can only access their own data
+- ✅ **Input Validation** - Zod schemas + XSS prevention
+- ✅ **Rate Limiting** - Protection against abuse
+- ✅ **Password Strength** - Enforced requirements with visual feedback
+
+### 📊 Fair Usage Credit System
+[View detailed credit system documentation →](./docs/CREDITS_SYSTEM.md)
+
+| User Type | Generations | Prompt Views | Storage | Cost |
+|-----------|-------------|--------------|---------|------|
+| 🎭 Anonymous | 3 free | 3 free views | localStorage | Free |
+| ✨ Registered | 50 credits | Unlimited | Database | Free |
 
 ---
 
 ## 🛠️ Tech Stack
 
+<table>
+<tr>
+<td width="33%">
+
 ### Frontend
-- **React 18.3** - Modern UI library
-- **TypeScript 5.5** - Type-safe development
-- **Vite 5.4** - Lightning-fast build tool
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Smooth animations
-- **React Router DOM** - Client-side routing
+- ⚛️ **React 18.3** - UI library
+- 📘 **TypeScript 5.5** - Type safety
+- ⚡ **Vite 5.4** - Build tool
+- 🎨 **Tailwind CSS** - Styling
+- 🎬 **Framer Motion** - Animations
+- 🛣️ **React Router** - Routing
+
+</td>
+<td width="33%">
 
 ### Backend
-- **Supabase** - Backend as a Service
-- **PostgreSQL** - Robust database with RLS
-- **Edge Functions** - Serverless functions
+- 🗄️ **Supabase** - BaaS platform
+- 🐘 **PostgreSQL** - Database with RLS
+- ⚡ **Edge Functions** - Serverless
+
+</td>
+<td width="33%">
 
 ### AI Integration
-- **Google Gemini 2.0 Flash** - Primary AI model
-- **OpenRouter (Llama 3.2)** - Fallback option
+- 🤖 **Gemini 2.0 Flash** - Primary model
+- 🦙 **Llama 3.2** - Fallback via OpenRouter
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-```bash
-Node.js 18+ and npm
-Git
-Supabase account (free tier)
-Google Gemini API key OR OpenRouter API key
-```
+> **📋 Prerequisites:** Node.js 18+, npm, Supabase account (free), and at least one AI API key
 
-### Installation
+### 1️⃣ Clone the Repository
 
-1. **Clone the repository**
 ```bash
 git clone https://github.com/Addy-shetty/Vibe-Prompting.git
 cd Vibe-Prompting
 ```
 
-2. **Install dependencies**
+### 2️⃣ Install Dependencies
+
 ```bash
 npm install
 ```
 
-3. **Set up environment variables**
+### 3️⃣ Set Up Environment Variables
 
-Create a `.env` file:
+Copy `.env.example` to `.env` and fill in your credentials:
 
+```bash
+cp .env.example .env
+```
+
+**Required variables:**
 ```env
-# Supabase Configuration
+# Supabase (Get from: https://app.supabase.com/project/_/settings/api)
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# AI API Keys (Choose one or both)
-VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_OPENROUTER_API_KEY=your_openrouter_api_key
+# AI API Keys (choose at least one)
+VITE_GEMINI_API_KEY=your_gemini_api_key        # https://aistudio.google.com/apikey
+VITE_OPENROUTER_API_KEY=your_openrouter_key    # https://openrouter.ai/keys
 ```
 
-4. **Set up Supabase**
+> 💡 **Tip:** See [.env.example](./.env.example) for detailed setup instructions
 
-Run migrations in order:
+### 4️⃣ Set Up Supabase Database
+
+Run migrations in the [Supabase SQL Editor](https://app.supabase.com):
+
 ```bash
+# Or use Supabase CLI
 npx supabase db reset
 ```
 
-5. **Start development server**
+📚 [Detailed database setup guide →](./docs/SUPABASE_SETUP.md)
+
+### 5️⃣ Start Development Server
+
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:5173` 🎉
+🎉 Visit **http://localhost:5173** and start creating prompts!
+
+### 🚢 Build for Production
+
+```bash
+npm run build
+npm run preview
+```
 
 ---
 
@@ -145,74 +199,190 @@ vibe-prompting/
 
 ## 📖 Documentation
 
-- **[Security Policy](./SECURITY.md)** - Vulnerability reporting & security measures
-- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
-- **[Authentication Guide](./docs/AUTH_GUIDE.md)** - Auth implementation
-- **[Credits System](./docs/CREDITS_SYSTEM.md)** - Credit system details
-- **[Database Setup](./docs/SUPABASE_SETUP.md)** - Supabase configuration
-- **[Security Implementation](./docs/SECURITY_IMPLEMENTATION_FULL.md)** - Complete security guide
+### 📚 Core Documentation
+| Document | Description |
+|----------|-------------|
+| [🔒 Security Policy](./SECURITY.md) | Vulnerability reporting & security measures |
+| [🤝 Contributing Guide](./CONTRIBUTING.md) | How to contribute to this project |
+| [📜 MIT License](./LICENSE) | Open source license details |
+
+### 🔧 Technical Guides
+| Guide | Description |
+|-------|-------------|
+| [🔐 Authentication](./docs/AUTH_GUIDE.md) | Auth implementation & user flows |
+| [💳 Credits System](./docs/CREDITS_SYSTEM.md) | How credits work & limitations |
+| [🗄️ Database Setup](./docs/SUPABASE_SETUP.md) | Supabase configuration & migrations |
+| [🛡️ Security Details](./docs/SECURITY_IMPLEMENTATION_FULL.md) | Complete security implementation |
+
+### 🔗 Quick Links
+- 📋 [.env.example](./.env.example) - Environment variables template
+- 🗂️ [supabase/migrations](./supabase/migrations/) - Database migration files
+- 🧩 [src/components](./src/components/) - React components
+- 🎣 [src/hooks](./src/hooks/) - Custom React hooks
 
 ---
 
-## 🎮 Usage
+## 🎮 Usage Guide
 
-### Anonymous Users
-1. Visit homepage
-2. Click example prompts
-3. Generate up to 3 prompts
-4. Copy to clipboard
-5. Sign up to save permanently
+### 🎭 For Anonymous Users
 
-### Registered Users
-1. Sign up (get 50 credits)
-2. Generate prompts
-3. Save with tags
-4. Browse gallery
-5. Manage your prompts
+1. 🏠 **Visit Homepage** - Explore example prompts
+2. 🎯 **Click a Category** - Choose your prompt type
+3. ✨ **Generate** - Create up to 3 free prompts
+4. 📋 **Copy** - One-click clipboard copy
+5. 💾 **Sign Up** - To save prompts permanently
+
+> ⚠️ **Note:** Anonymous prompts are stored in localStorage and may be lost
+
+### ✨ For Registered Users
+
+1. 📝 **Sign Up** - Get 50 free credits instantly
+2. 🎨 **Generate Prompts** - Use your credits wisely
+3. 🏷️ **Add Tags** - Organize with up to 5 tags
+4. 🌍 **Make Public** - Share with the community
+5. 📚 **Browse Gallery** - Discover & save others' prompts
+6. ⚙️ **Manage** - Edit or delete your creations
+
+### 💡 Pro Tips
+
+- 🎯 **Be Specific** - More detailed inputs = better prompts
+- 🏷️ **Use Tags** - Makes finding prompts easier later
+- 🌍 **Go Public** - Help the community & get discovered
+- 💳 **Track Credits** - Visible in navbar when logged in
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
+We ❤️ contributions! Whether it's bug reports, feature requests, or code contributions - all are welcome!
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
+### 🚀 Quick Contribution Steps
+
+1. 🍴 **Fork** the repository
+2. 🌿 **Create** a feature branch
+   ```bash
+   git checkout -b feature/AmazingFeature
+   ```
+3. 💻 **Code** your changes
+4. ✅ **Commit** with clear messages
+   ```bash
+   git commit -m 'feat: Add AmazingFeature'
+   ```
+5. 📤 **Push** to your branch
+   ```bash
+   git push origin feature/AmazingFeature
+   ```
+6. 🎯 **Open** a Pull Request
+
+### 📋 Contribution Guidelines
+
+Please read our [**Contributing Guide**](./CONTRIBUTING.md) for:
+- 📜 Code of Conduct
+- 🛠️ Development setup
+- 💻 Coding standards
+- ✉️ Commit message conventions
+- 🧪 Testing requirements
+
+### 🐛 Found a Bug?
+
+[Open an issue](https://github.com/Addy-shetty/Vibe-Prompting/issues) with:
+- Clear description
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots (if applicable)
+
+### 💡 Feature Request?
+
+We'd love to hear your ideas! [Create a feature request](https://github.com/Addy-shetty/Vibe-Prompting/issues) and describe:
+- The problem it solves
+- Proposed solution
+- Alternative approaches
 
 ---
 
 ## 📝 License
 
-MIT License - see [LICENSE](LICENSE) file
+This project is licensed under the **MIT License** - see the [**LICENSE**](./LICENSE) file for details.
+
+### 📜 What This Means
+
+✅ **Commercial use** - Use it in your business  
+✅ **Modification** - Change and customize freely  
+✅ **Distribution** - Share with anyone  
+✅ **Private use** - Use for personal projects  
+
+⚠️ **Conditions:**
+- Include copyright notice
+- Include license copy
+
+📖 [Read the full MIT License →](./LICENSE)
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Google Gemini - AI model
-- Supabase - Backend infrastructure
-- Tailwind CSS - Styling
-- Framer Motion - Animations
-- React - UI library
+This project wouldn't be possible without these amazing tools and services:
+
+| Technology | Purpose | License |
+|------------|---------|---------|
+| [Google Gemini](https://ai.google.dev/) | AI prompt generation | Google AI |
+| [Supabase](https://supabase.com/) | Backend infrastructure | Apache 2.0 |
+| [React](https://reactjs.org/) | UI framework | MIT |
+| [TypeScript](https://www.typescriptlang.org/) | Type safety | Apache 2.0 |
+| [Tailwind CSS](https://tailwindcss.com/) | Styling | MIT |
+| [Framer Motion](https://www.framer.com/motion/) | Animations | MIT |
+| [Vite](https://vitejs.dev/) | Build tool | MIT |
+
+Special thanks to:
+- 🌟 All [contributors](https://github.com/Addy-shetty/Vibe-Prompting/graphs/contributors)
+- 🐛 Bug reporters and testers
+- 💡 Feature requesters
+- ⭐ Everyone who starred this repo
 
 ---
 
 ## 📧 Contact
 
-**Harshith M S (Addy Shetty)**
+<div align="center">
 
-- GitHub: [@Addy-shetty](https://github.com/Addy-shetty)
-- Email: Harshithms@gmail.com
+### Harshith M S (Addy Shetty)
+
+[![GitHub](https://img.shields.io/badge/GitHub-@Addy--shetty-181717?style=for-the-badge&logo=github)](https://github.com/Addy-shetty)
+[![Email](https://img.shields.io/badge/Email-Harshithms@gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:Harshithms@gmail.com)
+
+</div>
+
+### 💬 Get in Touch
+
+- 💼 **GitHub:** [@Addy-shetty](https://github.com/Addy-shetty)
+- 📧 **Email:** Harshithms@gmail.com
+- 🐛 **Issues:** [Report bugs](https://github.com/Addy-shetty/Vibe-Prompting/issues)
+- 💡 **Discussions:** [Join conversations](https://github.com/Addy-shetty/Vibe-Prompting/discussions)
 
 ---
 
 <div align="center">
 
+### 🌟 Show Your Support
+
+If you find this project useful, please consider:
+
+⭐ **Starring this repository**  
+🍴 **Forking and contributing**  
+🐛 **Reporting bugs**  
+💡 **Suggesting features**  
+📢 **Sharing with others**
+
+---
+
 **Made with ❤️ by [Addy Shetty](https://github.com/Addy-shetty)**
 
-⭐ Star this repo if you find it useful!
+[![Star History](https://img.shields.io/github/stars/Addy-shetty/Vibe-Prompting?style=social)](https://github.com/Addy-shetty/Vibe-Prompting/stargazers)
+[![Forks](https://img.shields.io/github/forks/Addy-shetty/Vibe-Prompting?style=social)](https://github.com/Addy-shetty/Vibe-Prompting/network/members)
+[![Issues](https://img.shields.io/github/issues/Addy-shetty/Vibe-Prompting)](https://github.com/Addy-shetty/Vibe-Prompting/issues)
+
+**Thank you for visiting! Happy Prompting! 🎨✨**
+
+[⬆ Back to Top](#-vibe-prompting)
 
 </div>
