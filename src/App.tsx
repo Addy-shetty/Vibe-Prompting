@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 
 import { Tiles } from '@/components/ui/tiles'
 import Navbar from '@/components/Navbar'
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/docs" element={<DocsPage />} />
         </Routes>
       </div>
+      <Analytics />
     </div>
   )
 }
