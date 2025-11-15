@@ -79,7 +79,8 @@ Built with security at its core. [Learn more →](./SECURITY.md)
 | User Type | Generations | Prompt Views | Storage | Cost |
 |-----------|-------------|--------------|---------|------|
 | 🎭 Anonymous | 3 free | 3 free views | localStorage | Free |
-| ✨ Registered | 50 credits | Unlimited | Database | Free |
+| ✨ Registered | 7 credits | Unlimited | Database | Free |
+| Price          | Comming soon | 
 
 ---
 
