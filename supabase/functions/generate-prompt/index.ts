@@ -3,7 +3,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY')
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -51,9 +51,25 @@ serve(async (req) => {
           return new Response(JSON.stringify({ text, model: 'gemini' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
+        } else {
+          const errorData = await response.text()
+          console.error('Gemini API error:', response.status, errorData)
+          
+          return new Response(JSON.stringify({ 
+            error: `Gemini API failed: ${response.status} - ${errorData}` 
+          }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
         }
       } catch (error) {
         console.error('Gemini error:', error)
+        return new Response(JSON.stringify({ 
+          error: `Gemini request failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
     }
 
@@ -89,7 +105,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
