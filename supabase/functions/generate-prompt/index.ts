@@ -1,9 +1,8 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-
+// Use Deno's built-in serve function
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY')
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
