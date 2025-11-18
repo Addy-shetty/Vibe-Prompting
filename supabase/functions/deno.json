@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "strict": true,
-    "lib": ["deno.window"]
+    "lib": ["deno.window", "deno.ns", "esnext"],
+    "types": ["https://deno.land/x/edge_runtime/index.d.ts"]
   },
   "imports": {
-    "std/": "https://deno.land/std@0.168.0/"
+    "std/": "https://deno.land/std@0.224.0/"
   }
 }

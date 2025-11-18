@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.ns", "deno.unstable", "esnext"]
+  }
+}
