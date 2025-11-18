@@ -33,7 +33,7 @@ export default function GeneratePromptPage() {
   const { theme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
-  const { hasCredits, deductCredit, getCreditsRemaining, loading: creditsLoading } = useCredits()
+  const { hasCredits, deductCredit, refundCredit, getCreditsRemaining, loading: creditsLoading } = useCredits()
 
   const [userInput, setUserInput] = useState('')
   const [category, setCategory] = useState('General Development')
@@ -102,40 +102,47 @@ export default function GeneratePromptPage() {
         return
       }
 
-      await generatePromptStream(
-        userInput,
-        category,
-        (text) => {
-          setGeneratedPrompt(text)
-        }
-      )
-      
-      // Store in localStorage for anonymous users (backup)
-      if (!user) {
-        localStorage.setItem(LAST_PROMPT_STORAGE_KEY, JSON.stringify({
-          content: '',  // Will be filled when generation completes
-          category,
+      try {
+        await generatePromptStream(
           userInput,
-          timestamp: new Date().toISOString()
-        }))
-      }
-      
-      // Show remaining credits
-      const remaining = getCreditsRemaining()
-      if (user) {
-        toast.success(`Prompt generated! ${remaining} credits remaining`, { icon: '✨' })
-      } else {
-        toast.success(`Prompt generated! ${remaining} free generations left`, { icon: '✨' })
-        // Show warning after a delay
-        setTimeout(() => {
-          toast('💡 Sign up to save your prompts permanently!', { 
-            duration: 4000,
-            icon: '⚠️'
-          })
-        }, 2000)
+          category,
+          (text) => {
+            setGeneratedPrompt(text)
+          }
+        )
+        
+        // Store in localStorage for anonymous users (backup)
+        if (!user) {
+          localStorage.setItem(LAST_PROMPT_STORAGE_KEY, JSON.stringify({
+            content: '',  // Will be filled when generation completes
+            category,
+            userInput,
+            timestamp: new Date().toISOString()
+          }))
+        }
+        
+        // Show remaining credits
+        const remaining = getCreditsRemaining()
+        if (user) {
+          toast.success(`Prompt generated! ${remaining} credits remaining`, { icon: '✨' })
+        } else {
+          toast.success(`Prompt generated! ${remaining} free generations left`, { icon: '✨' })
+          // Show warning after a delay
+          setTimeout(() => {
+            toast('💡 Sign up to save your prompts permanently!', { 
+              duration: 4000,
+              icon: '⚠️'
+            })
+          }, 2000)
+        }
+      } catch (genError: any) {
+        // Generation failed - refund the credit
+        await refundCredit()
+        throw genError
       }
     } catch (err: any) {
       setError(err.message || 'Failed to generate prompt')
+      toast.error('Generation failed. Credit has been refunded.')
     } finally {
       setIsGenerating(false)
     }

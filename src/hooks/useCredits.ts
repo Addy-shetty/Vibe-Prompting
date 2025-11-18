@@ -68,6 +68,16 @@ export function useCredits() {
     saveAnonymousLimits(limits)
   }
 
+  // Decrement anonymous generation count (for refunds)
+  const decrementAnonymousGeneration = () => {
+    const limits = getAnonymousLimits()
+    if (limits.generations > 0) {
+      limits.generations -= 1
+      limits.lastUpdated = new Date().toISOString()
+      saveAnonymousLimits(limits)
+    }
+  }
+
   // Increment anonymous view count
   const incrementAnonymousView = () => {
     const limits = getAnonymousLimits()
@@ -142,6 +152,38 @@ export function useCredits() {
     }
   }
 
+  // Refund one credit (if generation fails)
+  const refundCredit = async (): Promise<boolean> => {
+    if (!user) {
+      // Anonymous user - decrement localStorage
+      decrementAnonymousGeneration()
+      return true
+    }
+
+    // Logged-in user - call database function
+    try {
+      const { data, error } = await supabase.rpc('refund_credit', {
+        p_user_id: user.id,
+      })
+
+      if (error) {
+        console.error('Error refunding credit:', error)
+        return false
+      }
+
+      if (data) {
+        // Refresh credits
+        await fetchUserCredits()
+        return true
+      }
+
+      return false
+    } catch (error) {
+      console.error('Error in refundCredit:', error)
+      return false
+    }
+  }
+
   // Check if user has credits to generate
   const hasCredits = (): boolean => {
     if (!user) {
@@ -176,6 +218,7 @@ export function useCredits() {
     
     // Actions
     deductCredit,
+    refundCredit,
     hasCredits,
     getCreditsRemaining,
     refetchCredits: fetchUserCredits,

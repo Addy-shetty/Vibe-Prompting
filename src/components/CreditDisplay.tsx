@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Coins } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useCredits } from '@/hooks/useCredits'
 
 interface CreditDisplayProps {
   theme: 'light' | 'dark'
@@ -9,10 +10,11 @@ interface CreditDisplayProps {
 
 export default function CreditDisplay({ theme }: CreditDisplayProps) {
   const { user } = useAuth()
+  const { credits, loading } = useCredits()
 
-  if (!user?.credits_remaining) return null
+  if (!user || loading || !credits) return null
 
-  const isLowCredits = user.credits_remaining <= 5
+  const isLowCredits = credits.creditsRemaining <= 5
 
   return (
     <Link to="/pricing">
@@ -46,7 +48,7 @@ export default function CreditDisplay({ theme }: CreditDisplayProps) {
               : isLowCredits ? 'text-amber-700' : 'text-neutral-900'
           }`}
         >
-          {user.credits_remaining}
+          {credits.creditsRemaining}
         </span>
         {isLowCredits && (
           <span className="text-xs text-amber-500 font-medium">
