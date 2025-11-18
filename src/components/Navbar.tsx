@@ -4,6 +4,7 @@ import { Github, Moon, Sun, LogOut, User } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
+import CreditDisplay from '@/components/CreditDisplay'
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
@@ -67,6 +68,19 @@ export default function Navbar() {
               transition={{ duration: 0.2 }}
             >
               Prompts
+            </motion.button>
+          </Link>
+          <Link to="/pricing">
+            <motion.button
+              className={`text-sm font-medium transition-colors ${
+                theme === 'dark'
+                  ? 'text-neutral-400 hover:text-white'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+            >
+              Pricing
             </motion.button>
           </Link>
           <Link to="/docs">
@@ -139,7 +153,9 @@ export default function Navbar() {
 
           {/* Auth Buttons or User Menu */}
           {user ? (
-            <div className="relative" ref={menuRef}>
+            <>
+              <CreditDisplay theme={theme} />
+              <div className="relative" ref={menuRef}>
               <motion.button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 whileHover={{ scale: 1.05 }}
@@ -195,6 +211,7 @@ export default function Navbar() {
                 </motion.div>
               )}
             </div>
+            </>
           ) : (
             <>
               <Link to="/login">

@@ -10,6 +10,7 @@ import SignupPage from '@/pages/SignupPage'
 import GeneratePromptPage from '@/pages/GeneratePromptPage'
 import MyPromptsPage from '@/pages/MyPromptsPage'
 import DocsPage from '@/pages/DocsPage'
+import PricingPage from '@/pages/PricingPage'
 import { useTheme } from '@/context/ThemeContext'
 
 function HomePage() {
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/generate" element={<GeneratePromptPage />} />
           <Route path="/prompts" element={<MyPromptsPage />} />
           <Route path="/docs" element={<DocsPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
         </Routes>
       </div>
       <Analytics />
