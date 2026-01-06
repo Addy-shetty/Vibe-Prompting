@@ -513,14 +513,14 @@ export default function MyPromptsPage() {
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 h-full flex flex-col justify-between">
-                      <div className="space-y-3 pt-8">
+                    <div className="p-6 h-full flex flex-col">
+                      <div className="flex-grow overflow-hidden pt-8 space-y-3">
                         <p className={`text-sm font-bold ${
                           theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                         }`}>
                           {prompt.title}
                         </p>
-                        <p className={`text-sm line-clamp-3 font-medium ${
+                        <p className={`text-sm line-clamp-4 font-medium ${
                           theme === 'dark' ? 'text-white' : 'text-neutral-900'
                         }`}>
                           {prompt.content}
@@ -553,7 +553,7 @@ export default function MyPromptsPage() {
                       </div>
 
                       {/* Footer */}
-                      <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center justify-between mt-4 pt-2 border-t border-neutral-700">
                         <div className={`flex items-center gap-1 text-xs font-bold ${
                           theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
                         }`}>
