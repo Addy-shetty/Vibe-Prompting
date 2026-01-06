@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '@/context/ThemeContext'
+import { Tiles } from '@/components/ui/tiles'
 import { 
   Book, 
   Shield, 
@@ -867,17 +868,18 @@ export default function DocsPage() {
   const tableOfContents = extractHeadings(selectedSection.content)
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 md:px-6">
-      <div className="max-w-[1400px] mx-auto">
+    <div className="relative min-h-screen pt-24 pb-12 px-4 md:px-6">
+      <Tiles />
+      <div className="relative z-10 max-w-[1400px] mx-auto">
         {/* Mobile Menu Button */}
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-          className={`lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl ${
+          className={`lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full border-2 ${
             theme === 'dark'
-              ? 'bg-purple-600 text-white'
-              : 'bg-purple-600 text-white'
+              ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
+              : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
           }`}
         >
           {showMobileSidebar ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -891,10 +893,10 @@ export default function DocsPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={scrollToTop}
-              className={`fixed bottom-6 left-6 z-50 p-3 rounded-full shadow-lg transition-colors ${
+              className={`fixed bottom-6 left-6 z-50 p-3 rounded-full transition-colors border-2 ${
                 theme === 'dark'
-                  ? 'bg-neutral-800 text-white hover:bg-neutral-700'
-                  : 'bg-white text-neutral-900 hover:bg-neutral-100 border border-neutral-200'
+                  ? 'bg-neutral-800 border-white text-white hover:bg-neutral-700 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
+                  : 'bg-white border-black text-neutral-900 hover:bg-neutral-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
               }`}
             >
               <ArrowUp className="w-5 h-5" />
@@ -909,14 +911,18 @@ export default function DocsPage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-4">
-            <Book className="w-10 h-10 text-purple-500" />
+            <div className={`p-3 rounded-xl border-2 ${
+              theme === 'dark' ? 'bg-neutral-800 border-white' : 'bg-white border-black'
+            }`}>
+              <Book className="w-8 h-8 text-purple-500" />
+            </div>
             <div>
-              <h1 className={`text-4xl md:text-5xl font-bold ${
+              <h1 className={`text-4xl md:text-5xl font-black ${
                 theme === 'dark' ? 'text-white' : 'text-neutral-900'
               }`}>
                 Documentation
               </h1>
-              <p className={`text-base md:text-lg mt-1 ${
+              <p className={`text-base md:text-lg mt-1 font-medium ${
                 theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
               }`}>
                 Complete guide to Vibe Prompting
@@ -934,10 +940,10 @@ export default function DocsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search documentation..."
-              className={`w-full pl-12 pr-6 py-4 rounded-xl border outline-none transition-all ${
+              className={`w-full pl-12 pr-6 py-4 rounded-xl border-2 outline-none transition-all font-medium ${
                 theme === 'dark'
-                  ? 'bg-neutral-900/50 border-neutral-800 text-white placeholder:text-neutral-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                  : 'bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
+                  ? 'bg-neutral-900 border-white text-white placeholder:text-neutral-500 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] focus:translate-y-[-2px] focus:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)]'
+                  : 'bg-white border-black text-neutral-900 placeholder:text-neutral-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-y-[-2px] focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
               }`}
             />
           </div>
@@ -967,13 +973,13 @@ export default function DocsPage() {
                 )}
 
                 <div className={`relative ${showMobileSidebar ? 'w-80 h-full overflow-y-auto' : ''} lg:sticky lg:top-24`}>
-                  <div className={`rounded-xl p-6 border h-full lg:h-auto ${
+                  <div className={`rounded-xl p-6 border-2 h-full lg:h-auto ${
                     theme === 'dark'
-                      ? 'bg-neutral-900/95 backdrop-blur-sm border-neutral-800'
-                      : 'bg-white border-neutral-200'
+                      ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
+                      : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                   }`}>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className={`text-sm font-bold tracking-wide ${
+                      <h3 className={`text-sm font-black tracking-wide ${
                         theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}>
                         CONTENTS
@@ -988,7 +994,7 @@ export default function DocsPage() {
                       )}
                     </div>
                     
-                    <nav className="space-y-1">
+                    <nav className="space-y-2">
                       {filteredSections.map((section) => {
                         const Icon = section.icon
                         const isActive = selectedSection.id === section.id
@@ -998,20 +1004,20 @@ export default function DocsPage() {
                             key={section.id}
                             whileHover={{ x: 4 }}
                             onClick={() => handleSectionChange(section)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left group ${
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left group border-2 ${
                               isActive
                                 ? theme === 'dark'
-                                  ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500'
-                                  : 'bg-purple-50 text-purple-700 border-l-2 border-purple-600'
+                                  ? 'bg-purple-600 border-white text-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]'
+                                  : 'bg-purple-600 border-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                 : theme === 'dark'
-                                  ? 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
-                                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
+                                  ? 'border-transparent text-neutral-400 hover:text-white hover:bg-neutral-800'
+                                  : 'border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
                             }`}
                           >
                             <Icon className={`w-4 h-4 flex-shrink-0 ${
-                              isActive ? 'text-purple-500' : ''
+                              isActive ? 'text-white' : ''
                             }`} />
-                            <span className="text-sm font-medium flex-1">{section.title}</span>
+                            <span className="text-sm font-bold flex-1">{section.title}</span>
                             {isActive && <ChevronRight className="w-4 h-4" />}
                           </motion.button>
                         )
@@ -1045,26 +1051,28 @@ export default function DocsPage() {
                 </div>
 
                 {/* Content Card */}
-                <div className={`rounded-xl border ${
+                <div className={`rounded-xl border-2 ${
                   theme === 'dark'
-                    ? 'bg-neutral-900/50 border-neutral-800'
-                    : 'bg-white border-neutral-200'
+                    ? 'bg-neutral-900 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]'
+                    : 'bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
                 }`}>
                   {/* Header */}
-                  <div className={`p-6 md:p-8 border-b ${
-                    theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200'
+                  <div className={`p-6 md:p-8 border-b-2 ${
+                    theme === 'dark' ? 'border-white' : 'border-black'
                   }`}>
                     <div className="flex items-start gap-4">
                       {(() => {
                         const Icon = selectedSection.icon
                         return (
-                          <div className="p-3 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-                            <Icon className="w-6 h-6 text-white" />
+                          <div className={`p-3 rounded-xl border-2 ${
+                            theme === 'dark' ? 'bg-neutral-800 border-white' : 'bg-white border-black'
+                          }`}>
+                            <Icon className="w-6 h-6 text-purple-500" />
                           </div>
                         )
                       })()}
                       <div className="flex-1">
-                        <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${
+                        <h2 className={`text-2xl md:text-3xl font-black mb-2 ${
                           theme === 'dark' ? 'text-white' : 'text-neutral-900'
                         }`}>
                           {selectedSection.title}
@@ -1073,7 +1081,7 @@ export default function DocsPage() {
                           <FileText className={`w-4 h-4 ${
                             theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
                           }`} />
-                          <span className={`text-sm ${
+                          <span className={`text-sm font-medium ${
                             theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
                           }`}>
                             Source: {selectedSection.file}
@@ -1084,7 +1092,7 @@ export default function DocsPage() {
 
                     {/* Table of Contents */}
                     {tableOfContents.length > 0 && (
-                      <div className={`mt-6 pt-6 border-t ${
+                      <div className={`mt-6 pt-6 border-t-2 ${
                         theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200'
                       }`}>
                         <h3 className={`text-sm font-bold mb-3 ${
@@ -1100,7 +1108,7 @@ export default function DocsPage() {
                             >
                               <a
                                 href={`#${heading.id}`}
-                                className={`text-sm hover:underline transition-colors ${
+                                className={`text-sm font-medium hover:underline transition-colors ${
                                   theme === 'dark'
                                     ? 'text-neutral-400 hover:text-purple-400'
                                     : 'text-neutral-600 hover:text-purple-600'
@@ -1130,15 +1138,15 @@ export default function DocsPage() {
                           .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
                             const language = lang || 'text'
                             return `
-                              <div style="margin: 24px 0; border-radius: 8px; overflow: hidden; border: 1px solid ${theme === 'dark' ? '#404040' : '#e5e5e5'}; background: ${theme === 'dark' ? '#1a1a1a' : '#fafafa'};">
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: ${theme === 'dark' ? '#262626' : '#f0f0f0'}; border-bottom: 1px solid ${theme === 'dark' ? '#404040' : '#e5e5e5'};">
+                              <div style="margin: 24px 0; border-radius: 12px; overflow: hidden; border: 2px solid ${theme === 'dark' ? '#fff' : '#000'}; background: ${theme === 'dark' ? '#1a1a1a' : '#fafafa'}; box-shadow: 4px 4px 0px 0px ${theme === 'dark' ? '#fff' : '#000'};">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: ${theme === 'dark' ? '#262626' : '#f0f0f0'}; border-bottom: 2px solid ${theme === 'dark' ? '#fff' : '#000'};">
                                   <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="display: flex; gap: 6px;">
-                                      <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f56;"></div>
-                                      <div style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e;"></div>
-                                      <div style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f;"></div>
+                                      <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f56; border: 1px solid #000;"></div>
+                                      <div style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e; border: 1px solid #000;"></div>
+                                      <div style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f; border: 1px solid #000;"></div>
                                     </div>
-                                    <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; color: ${theme === 'dark' ? '#999' : '#666'};">${language}</span>
+                                    <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; font-weight: bold; color: ${theme === 'dark' ? '#999' : '#666'};">${language}</span>
                                   </div>
                                 </div>
                                 <pre style="margin: 0; padding: 16px; overflow-x: auto;"><code style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; color: ${theme === 'dark' ? '#e0e0e0' : '#333'};">${code.trim()}</code></pre>
@@ -1146,20 +1154,20 @@ export default function DocsPage() {
                             `
                           })
                           // Inline code
-                          .replace(/`([^`]+)`/g, `<code style="background: ${theme === 'dark' ? '#2d1b69' : '#f3f0ff'}; color: ${theme === 'dark' ? '#c4b5fd' : '#7c3aed'}; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 14px;">\$1</code>`)
+                          .replace(/`([^`]+)`/g, `<code style="background: ${theme === 'dark' ? '#2d1b69' : '#f3f0ff'}; color: ${theme === 'dark' ? '#c4b5fd' : '#7c3aed'}; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 14px; border: 1px solid ${theme === 'dark' ? '#4c1d95' : '#ddd6fe'}; font-weight: bold;">\$1</code>`)
                           // Headings
-                          .replace(/^### (.+)$/gm, `<h3 style="font-size: 20px; font-weight: 700; margin-top: 48px; margin-bottom: 16px; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h3>`)
-                          .replace(/^## (.+)$/gm, `<h2 style="font-size: 24px; font-weight: 700; margin-top: 56px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid ${theme === 'dark' ? '#404040' : '#e5e5e5'}; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h2>`)
-                          .replace(/^# (.+)$/gm, `<h1 style="font-size: 32px; font-weight: 700; margin-bottom: 32px; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h1>`)
+                          .replace(/^### (.+)$/gm, `<h3 style="font-size: 20px; font-weight: 800; margin-top: 48px; margin-bottom: 16px; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h3>`)
+                          .replace(/^## (.+)$/gm, `<h2 style="font-size: 24px; font-weight: 900; margin-top: 56px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid ${theme === 'dark' ? '#404040' : '#e5e5e5'}; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h2>`)
+                          .replace(/^# (.+)$/gm, `<h1 style="font-size: 32px; font-weight: 900; margin-bottom: 32px; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h1>`)
                           // Bold
-                          .replace(/\*\*(.+?)\*\*/g, `<strong style="font-weight: 600; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</strong>`)
+                          .replace(/\*\*(.+?)\*\*/g, `<strong style="font-weight: 800; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</strong>`)
                           // Lists
-                          .replace(/^- (.+)$/gm, `<li style="margin: 8px 0; margin-left: 24px; line-height: 1.8;">\$1</li>`)
+                          .replace(/^- (.+)$/gm, `<li style="margin: 8px 0; margin-left: 24px; line-height: 1.8; font-weight: 500;">\$1</li>`)
                           // Checkboxes
-                          .replace(/- \[ \] (.+)/g, `<div style="display: flex; gap: 12px; margin: 8px 0;"><input type="checkbox" disabled style="margin-top: 4px;" /><span>\$1</span></div>`)
-                          .replace(/- \[x\] (.+)/g, `<div style="display: flex; gap: 12px; margin: 8px 0;"><input type="checkbox" checked disabled style="margin-top: 4px;" /><span style="text-decoration: line-through; opacity: 0.6;">\$1</span></div>`)
+                          .replace(/- \[ \] (.+)/g, `<div style="display: flex; gap: 12px; margin: 8px 0;"><input type="checkbox" disabled style="margin-top: 4px; border: 2px solid #000;" /><span>\$1</span></div>`)
+                          .replace(/- \[x\] (.+)/g, `<div style="display: flex; gap: 12px; margin: 8px 0;"><input type="checkbox" checked disabled style="margin-top: 4px; border: 2px solid #000;" /><span style="text-decoration: line-through; opacity: 0.6;">\$1</span></div>`)
                           // Horizontal rule
-                          .replace(/^---$/gm, `<hr style="margin: 48px 0; border: none; height: 1px; background: ${theme === 'dark' ? '#404040' : '#e5e5e5'};" />`)
+                          .replace(/^---$/gm, `<hr style="margin: 48px 0; border: none; height: 2px; background: ${theme === 'dark' ? '#404040' : '#e5e5e5'};" />`)
                           // Paragraphs - add spacing
                           .replace(/\n\n/g, '<br/><br/>')
                           .replace(/\n/g, '<br/>')
@@ -1168,11 +1176,11 @@ export default function DocsPage() {
                   </div>
 
                   {/* Footer with Prev/Next */}
-                  <div className={`p-6 md:p-8 border-t ${
-                    theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200'
+                  <div className={`p-6 md:p-8 border-t-2 ${
+                    theme === 'dark' ? 'border-white' : 'border-black'
                   }`}>
                     {/* Metadata */}
-                    <div className={`flex flex-wrap items-center gap-4 mb-6 pb-6 border-b text-sm ${
+                    <div className={`flex flex-wrap items-center gap-4 mb-6 pb-6 border-b-2 text-sm ${
                       theme === 'dark' ? 'border-neutral-800 text-neutral-500' : 'border-neutral-200 text-neutral-400'
                     }`}>
                       <span>Last updated: {new Date().toLocaleDateString()}</span>
@@ -1181,7 +1189,7 @@ export default function DocsPage() {
                         href={`https://github.com/yourusername/vibe-prompting/blob/main/${selectedSection.file}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`flex items-center gap-1 font-medium transition-colors ${
+                        className={`flex items-center gap-1 font-bold transition-colors ${
                           theme === 'dark'
                             ? 'text-purple-400 hover:text-purple-300'
                             : 'text-purple-600 hover:text-purple-700'
@@ -1197,22 +1205,22 @@ export default function DocsPage() {
                       {/* Previous */}
                       {previousSection ? (
                         <motion.button
-                          whileHover={{ scale: 1.02 }}
+                          whileHover={{ scale: 1.02, y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => handleSectionChange(previousSection)}
-                          className={`p-4 rounded-lg border transition-all text-left ${
+                          className={`p-4 rounded-xl border-2 transition-all text-left ${
                             theme === 'dark'
-                              ? 'bg-neutral-800/50 border-neutral-700 hover:border-neutral-600'
-                              : 'bg-neutral-50 border-neutral-200 hover:border-neutral-300'
+                              ? 'bg-neutral-800 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                              : 'bg-white border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
                           }`}
                         >
-                          <div className={`flex items-center gap-2 text-sm mb-1 ${
-                            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
+                          <div className={`flex items-center gap-2 text-sm mb-1 font-bold ${
+                            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                           }`}>
                             <ChevronLeft className="w-4 h-4" />
                             <span>Previous</span>
                           </div>
-                          <div className={`font-semibold ${
+                          <div className={`font-black ${
                             theme === 'dark' ? 'text-white' : 'text-neutral-900'
                           }`}>
                             {previousSection.title}
@@ -1225,22 +1233,22 @@ export default function DocsPage() {
                       {/* Next */}
                       {nextSection && (
                         <motion.button
-                          whileHover={{ scale: 1.02 }}
+                          whileHover={{ scale: 1.02, y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => handleSectionChange(nextSection)}
-                          className={`p-4 rounded-lg border transition-all text-right ${
+                          className={`p-4 rounded-xl border-2 transition-all text-right ${
                             theme === 'dark'
-                              ? 'bg-neutral-800/50 border-neutral-700 hover:border-neutral-600'
-                              : 'bg-neutral-50 border-neutral-200 hover:border-neutral-300'
+                              ? 'bg-neutral-800 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                              : 'bg-white border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
                           }`}
                         >
-                          <div className={`flex items-center justify-end gap-2 text-sm mb-1 ${
-                            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
+                          <div className={`flex items-center justify-end gap-2 text-sm mb-1 font-bold ${
+                            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                           }`}>
                             <span>Next</span>
                             <ChevronRight className="w-4 h-4" />
                           </div>
-                          <div className={`font-semibold ${
+                          <div className={`font-black ${
                             theme === 'dark' ? 'text-white' : 'text-neutral-900'
                           }`}>
                             {nextSection.title}

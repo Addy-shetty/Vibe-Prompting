@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { motion } from "framer-motion"
+import { useTheme } from "@/context/ThemeContext"
 
 import { cn } from "@/lib/utils"
 
@@ -27,11 +28,20 @@ export function Tiles({
   cols = 12,
   tileClassName,
   tileSize = "md",
-  tileColor = "rgba(148, 163, 184, 0.18)",
+  tileColor,
   hoverColor,
 }: TilesProps) {
+  const { theme } = useTheme()
   const rowsArray = React.useMemo(() => Array.from({ length: rows }), [rows])
   const colsArray = React.useMemo(() => Array.from({ length: cols }), [cols])
+  
+  // Default colors based on theme
+  const defaultTileColor = tileColor || (theme === 'dark' 
+    ? 'rgba(255, 255, 255, 0.03)' 
+    : 'rgba(0, 0, 0, 0.04)')
+  const defaultHoverColor = hoverColor || (theme === 'dark'
+    ? 'rgba(255, 255, 255, 0.08)'
+    : 'rgba(0, 0, 0, 0.1)')
 
   return (
     <div
@@ -41,8 +51,8 @@ export function Tiles({
       )}
       style={{
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        ["--tile"]: tileColor,
-        ["--tile-hover"]: hoverColor || tileColor,
+        ["--tile"]: defaultTileColor,
+        ["--tile-hover"]: defaultHoverColor,
       } as React.CSSProperties}
     >
       {rowsArray.map((_, rowIndex) => (
@@ -50,7 +60,8 @@ export function Tiles({
           key={`row-${rowIndex}`}
           className={cn(
             tileSizes[tileSize],
-            "relative border-l border-neutral-200",
+            "relative border-l",
+            theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200',
             tileClassName,
           )}
         >
@@ -66,7 +77,8 @@ export function Tiles({
               key={`col-${colIndex}`}
               className={cn(
                 tileSizes[tileSize],
-                "relative border-t border-r border-neutral-200",
+                "relative border-t border-r",
+                theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200',
                 tileClassName,
               )}
             />

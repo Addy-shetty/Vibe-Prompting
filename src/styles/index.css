@@ -1,19 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root{
-  color-scheme: light;
+@layer base {
+  :root {
+    --background: 45 100% 98%; /* #FFFDF5 - Off-white Neo-Brutalist BG */
+    --foreground: 0 0% 0%; /* Pure Black */
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%; /* Pure Black for primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 82 89% 55%; /* Acid Green #A3E635 */
+    --secondary-foreground: 0 0% 0%;
+    --muted: 45 100% 96%; /* Soft Pastel Yellow #FEFCE8 */
+    --muted-foreground: 0 0% 40%;
+    --accent: 240 100% 65%; /* Electric Blue #4D4DFF */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 70%; /* Hyper-Pink #FF6B6B */
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 0%; /* Pure Black borders */
+    --input: 0 0% 100%;
+    --ring: 240 100% 65%;
+    --radius: 4px; /* Sharp Neo-Brutalist corners */
+  }
+
+  .dark {
+    --background: 0 0% 5%; /* Dark Neo-Brutalist BG */
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 82 89% 55%; /* Acid Green */
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 240 100% 65%; /* Electric Blue */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 70%; /* Hyper-Pink */
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 100%; /* White borders in dark mode */
+    --input: 0 0% 15%;
+    --ring: 240 100% 65%;
+  }
 }
 
-html,body,#root{
-  height:100%;
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  /* Neo-Brutalist Typography Enhancements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-black uppercase tracking-tighter;
+  }
+  
+  strong, b {
+    @apply font-black;
+  }
 }
 
-body{
-  @apply bg-neutral-50 text-neutral-800 font-sans;
+/* Neo-Brutalist Utility Classes */
+@layer components {
+  .neo-button {
+    @apply border-3 border-black bg-white px-6 py-3 font-black uppercase tracking-wider text-black shadow-neo transition-all duration-150;
+    @apply hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px];
+  }
+  
+  .neo-button-primary {
+    @apply neo-button bg-neo-blue text-white hover:bg-neo-pink;
+  }
+  
+  .neo-button-secondary {
+    @apply neo-button bg-neo-green text-black hover:bg-neo-sunshine;
+  }
+  
+  .neo-input {
+    @apply border-3 border-black bg-white px-4 py-3 font-mono text-black shadow-neo-sm focus:outline-none focus:shadow-neo focus:translate-x-[1px] focus:translate-y-[1px] transition-all;
+  }
+  
+  .neo-card {
+    @apply border-3 border-black bg-white p-6 shadow-neo transition-all duration-200;
+    @apply hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px];
+  }
+  
+  .neo-badge {
+    @apply inline-flex items-center gap-2 border-2 border-black px-4 py-2 font-black uppercase text-sm shadow-neo-sm;
+  }
 }
 
-.card{
-  @apply bg-white rounded-2xl p-6 shadow-soft;
+/* Marquee Animation for scrolling elements */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
+
+.marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+

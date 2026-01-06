@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '@/context/ThemeContext'
+import { Tiles } from '@/components/ui/tiles'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { useCredits } from '@/hooks/useCredits'
+import { useCredits } from '@/hooks/useCreditsSecure'
 import toast, { Toaster } from 'react-hot-toast'
 import { 
   Copy, 
@@ -27,7 +28,10 @@ import {
   Shield,
   Terminal,
   AlertCircle,
-  LogIn
+  LogIn,
+  Edit2,
+  X,
+  Save
 } from 'lucide-react'
 
 interface Prompt {
@@ -38,16 +42,11 @@ interface Prompt {
   category: string | null
   tags: string[] | null
   is_public: boolean
-  is_approved: boolean
   views_count: number
   likes_count: number
   created_at: string
   updated_at: string
-  is_favorite?: boolean
 }
-
-// Empty - will load from database
-const DUMMY_PROMPTS: Prompt[] = []
 
 const CATEGORY_ICONS: Record<string, any> = {
   'Frontend Development': Code,
@@ -87,29 +86,75 @@ export default function MyPromptsPage() {
   const { theme } = useTheme()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { canAnonymousView, getAnonymousViewsLeft, incrementAnonymousView } = useCredits()
   
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [showViewLimitModal, setShowViewLimitModal] = useState(false)
-  const [hasTrackedView, setHasTrackedView] = useState(false)
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  // Sync anonymous prompts on login
+  useEffect(() => {
+    const syncAnonymousPrompts = async () => {
+      if (!user) return
+
+      const stored = localStorage.getItem('vibe_anonymous_prompts')
+      const oldStored = localStorage.getItem('vibe_last_generated_prompt') // Check for legacy data
+      
+      if (!stored && !oldStored) return
+
+      try {
+        let anonymousPrompts = []
+        
+        if (stored) {
+          anonymousPrompts = JSON.parse(stored)
+        }
+        
+        // Handle legacy single prompt
+        if (oldStored) {
+          const oldPrompt = JSON.parse(oldStored)
+          if (oldPrompt && oldPrompt.content) {
+            anonymousPrompts.push(oldPrompt)
+          }
+        }
+
+        if (!Array.isArray(anonymousPrompts) || anonymousPrompts.length === 0) return
+
+        const toastId = toast.loading(`Syncing ${anonymousPrompts.length} prompts...`)
+
+        for (const p of anonymousPrompts) {
+          if (!p.content) continue // Skip empty prompts
+
+          await supabase.from('prompts').insert({
+            user_id: user.id,
+            title: p.userInput ? p.userInput.slice(0, 50) + (p.userInput.length > 50 ? '...' : '') : 'Untitled Prompt',
+            content: p.content,
+            category: p.category || 'General Development',
+            is_public: false, // Default to private
+            created_at: p.timestamp || new Date().toISOString()
+          })
+        }
+
+        localStorage.removeItem('vibe_anonymous_prompts')
+        localStorage.removeItem('vibe_last_generated_prompt')
+        toast.success('Prompts synced successfully!', { id: toastId })
+        fetchPrompts() // Refresh list
+      } catch (error) {
+        console.error('Failed to sync prompts:', error)
+        toast.error('Failed to sync some prompts')
+      }
+    }
+
+    syncAnonymousPrompts()
+  }, [user])
 
   useEffect(() => {
-    // For anonymous users, check if they can view prompts
-    if (!user && !hasTrackedView) {
-      if (!canAnonymousView()) {
-        setShowViewLimitModal(true)
-        setLoading(false)
-        return
-      }
-      // Track this view
-      incrementAnonymousView()
-      setHasTrackedView(true)
+    if (!user) {
+      setLoading(false)
+      return
     }
-    
     fetchPrompts()
   }, [user, navigate])
 
@@ -118,21 +163,14 @@ export default function MyPromptsPage() {
   }, [searchQuery, selectedCategory, prompts])
 
   const fetchPrompts = async () => {
+    if (!user) return
+
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('prompts')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-
-      // If user is logged in, show public prompts OR user's own prompts
-      if (user) {
-        query = query.or(`is_public.eq.true,user_id.eq.${user.id}`)
-      } else {
-        // Anonymous users: only public prompts, limited to 3
-        query = query.eq('is_public', true).limit(3)
-      }
-
-      const { data, error } = await query
 
       if (error) {
         console.error('Database error:', error)
@@ -197,6 +235,36 @@ export default function MyPromptsPage() {
       toast.success('Prompt deleted', { icon: '🗑️', duration: 2000 })
     } catch (error) {
       toast.error('Failed to delete prompt')
+    }
+  }
+
+  const saveEditedPrompt = async () => {
+    if (!editingPrompt) return
+    setIsUpdating(true)
+
+    try {
+      const { error } = await supabase
+        .from('prompts')
+        .update({
+          title: editingPrompt.title,
+          content: editingPrompt.content,
+          is_public: editingPrompt.is_public,
+          tags: editingPrompt.tags,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingPrompt.id)
+
+      if (error) throw error
+
+      // Update local state
+      setPrompts(prompts.map(p => p.id === editingPrompt.id ? editingPrompt : p))
+      setEditingPrompt(null)
+      toast.success('Prompt updated successfully')
+    } catch (error) {
+      console.error('Error updating prompt:', error)
+      toast.error('Failed to update prompt')
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -273,7 +341,8 @@ export default function MyPromptsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6">
+    <div className="relative min-h-screen pt-24 pb-12 px-6">
+      <Tiles />
       <Toaster 
         position="top-right"
         toastOptions={{
@@ -309,20 +378,20 @@ export default function MyPromptsPage() {
           className="mb-8 flex flex-col md:flex-row gap-4"
         >
           {/* Search */}
-          <div className={`flex-1 relative ${
-            theme === 'dark' ? 'bg-neutral-900/50' : 'bg-white'
-          } rounded-2xl border ${
-            theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200'
+          <div className={`flex-1 relative rounded-xl border-2 ${
+            theme === 'dark' 
+              ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]' 
+              : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
           } overflow-hidden`}>
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
+              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
             }`} />
             <input
               type="text"
               placeholder="Search prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-12 pr-4 py-3 bg-transparent outline-none ${
+              className={`w-full pl-12 pr-4 py-3 bg-transparent outline-none font-medium ${
                 theme === 'dark' ? 'text-white placeholder:text-neutral-500' : 'text-neutral-900 placeholder:text-neutral-400'
               }`}
             />
@@ -331,15 +400,17 @@ export default function MyPromptsPage() {
           {/* Category Filter */}
           <div className="flex gap-2 overflow-x-auto pb-2">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all font-bold border-2 ${
                 selectedCategory === null
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  ? theme === 'dark'
+                    ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                    : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
                   : theme === 'dark'
-                  ? 'bg-neutral-900/50 border border-neutral-800 text-neutral-400 hover:text-white'
-                  : 'bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900'
+                    ? 'bg-neutral-900 border-white text-neutral-400 hover:text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                    : 'bg-white border-black text-neutral-600 hover:text-neutral-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
               }`}
             >
               All
@@ -347,15 +418,17 @@ export default function MyPromptsPage() {
             {categories.map(category => (
               <motion.button
                 key={category}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all font-bold border-2 ${
                   selectedCategory === category
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                    ? theme === 'dark'
+                      ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                      : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
                     : theme === 'dark'
-                    ? 'bg-neutral-900/50 border border-neutral-800 text-neutral-400 hover:text-white'
-                    : 'bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-neutral-900 border-white text-neutral-400 hover:text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                      : 'bg-white border-black text-neutral-600 hover:text-neutral-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
                 }`}
               >
                 {category}
@@ -371,29 +444,33 @@ export default function MyPromptsPage() {
             animate={{ opacity: 1, scale: 1 }}
             className={`text-center py-20 rounded-3xl border-2 border-dashed ${
               theme === 'dark' 
-                ? 'border-neutral-800 bg-neutral-900/30' 
-                : 'border-neutral-200 bg-neutral-50'
+                ? 'border-neutral-700 bg-neutral-900' 
+                : 'border-neutral-300 bg-white'
             }`}
           >
             <Sparkles className={`w-16 h-16 mx-auto mb-4 ${
               theme === 'dark' ? 'text-neutral-700' : 'text-neutral-300'
             }`} />
-            <h3 className={`text-xl font-semibold mb-2 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+            <h3 className={`text-xl font-bold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-neutral-900'
             }`}>
               {searchQuery || selectedCategory ? 'No prompts found' : 'No prompts yet'}
             </h3>
-            <p className={`mb-6 ${theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'}`}>
+            <p className={`mb-6 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>
               {searchQuery || selectedCategory 
                 ? 'Try adjusting your filters' 
                 : 'Start generating prompts to see them here!'}
             </p>
             {!searchQuery && !selectedCategory && (
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => navigate('/generate')}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:shadow-lg transition-shadow"
+                className={`px-6 py-3 rounded-xl font-bold transition-all border-2 ${
+                    theme === 'dark'
+                    ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                    : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
+                }`}
               >
                 Generate Your First Prompt
               </motion.button>
@@ -419,15 +496,17 @@ export default function MyPromptsPage() {
                   variants={itemVariants}
                   className={`${getBentoClass(index)} group relative`}
                 >
-                  <div className={`h-full rounded-2xl border overflow-hidden backdrop-blur-sm ${
+                  <div className={`h-full rounded-2xl border-2 overflow-hidden ${
                     theme === 'dark'
-                      ? 'bg-neutral-900/50 border-neutral-800 hover:border-neutral-700'
-                      : 'bg-white border-neutral-200 hover:border-neutral-300'
-                  } transition-all duration-300 hover:shadow-xl`}>
+                      ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
+                      : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                  } transition-all duration-300 hover:translate-y-[-2px] hover:shadow-none hover:translate-x-[2px]`}>
                     
                     {/* Category Badge */}
                     <div className="absolute top-3 left-3 z-10">
-                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${colorGradient} text-white text-xs font-medium shadow-lg`}>
+                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 ${
+                        theme === 'dark' ? 'border-white bg-neutral-900 text-white' : 'border-black bg-white text-black'
+                      } text-xs font-bold`}>
                         <Icon className="w-3 h-3" />
                         {prompt.category || 'General'}
                       </div>
@@ -436,12 +515,12 @@ export default function MyPromptsPage() {
                     {/* Content */}
                     <div className="p-6 h-full flex flex-col justify-between">
                       <div className="space-y-3 pt-8">
-                        <p className={`text-sm font-medium ${
+                        <p className={`text-sm font-bold ${
                           theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                         }`}>
                           {prompt.title}
                         </p>
-                        <p className={`text-sm line-clamp-3 ${
+                        <p className={`text-sm line-clamp-3 font-medium ${
                           theme === 'dark' ? 'text-white' : 'text-neutral-900'
                         }`}>
                           {prompt.content}
@@ -453,17 +532,17 @@ export default function MyPromptsPage() {
                             {prompt.tags.slice(0, 3).map((tag, tagIndex) => (
                               <span
                                 key={tagIndex}
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border-2 ${
                                   theme === 'dark'
-                                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                    : 'bg-purple-100 text-purple-700 border border-purple-200'
+                                    ? 'bg-neutral-800 text-white border-white'
+                                    : 'bg-neutral-100 text-black border-black'
                                 }`}
                               >
                                 #{tag}
                               </span>
                             ))}
                             {prompt.tags.length > 3 && (
-                              <span className={`text-xs ${
+                              <span className={`text-xs font-bold ${
                                 theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
                               }`}>
                                 +{prompt.tags.length - 3} more
@@ -475,8 +554,8 @@ export default function MyPromptsPage() {
 
                       {/* Footer */}
                       <div className="flex items-center justify-between mt-4">
-                        <div className={`flex items-center gap-1 text-xs ${
-                          theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
+                        <div className={`flex items-center gap-1 text-xs font-bold ${
+                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
                         }`}>
                           <Calendar className="w-3 h-3" />
                           {formatDate(prompt.created_at)}
@@ -487,10 +566,10 @@ export default function MyPromptsPage() {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => copyToClipboard(prompt.content)}
-                            className={`p-2 rounded-lg ${
+                            className={`p-2 rounded-lg border-2 ${
                               theme === 'dark'
-                                ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white'
-                                : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900'
+                                ? 'bg-neutral-800 border-white text-white hover:bg-neutral-700'
+                                : 'bg-neutral-100 border-black text-black hover:bg-neutral-200'
                             } transition-all`}
                           >
                             <Copy className="w-4 h-4" />
@@ -499,8 +578,25 @@ export default function MyPromptsPage() {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            onClick={() => setEditingPrompt(prompt)}
+                            className={`p-2 rounded-lg border-2 ${
+                              theme === 'dark'
+                                ? 'bg-neutral-800 border-white text-white hover:bg-neutral-700'
+                                : 'bg-neutral-100 border-black text-black hover:bg-neutral-200'
+                            } transition-all`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </motion.button>
+
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => deletePrompt(prompt.id)}
-                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all"
+                            className={`p-2 rounded-lg border-2 ${
+                                theme === 'dark'
+                                ? 'bg-red-900/20 border-red-500 text-red-400 hover:bg-red-900/40'
+                                : 'bg-red-50 border-red-500 text-red-600 hover:bg-red-100'
+                            } transition-all`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </motion.button>
@@ -514,72 +610,133 @@ export default function MyPromptsPage() {
           </motion.div>
         )}
 
-        {/* View Limit Modal for Anonymous Users */}
+        {/* Edit Prompt Modal */}
         <AnimatePresence>
-          {showViewLimitModal && (
+          {editingPrompt && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-              onClick={() => {
-                setShowViewLimitModal(false)
-                navigate('/')
-              }}
+              onClick={() => setEditingPrompt(null)}
             >
               <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className={`max-w-md w-full rounded-2xl p-8 ${
+                className={`max-w-2xl w-full rounded-2xl p-6 md:p-8 border-2 ${
                   theme === 'dark'
-                    ? 'bg-neutral-900 border border-neutral-800'
-                    : 'bg-white border border-neutral-200'
-                }`}
+                    ? 'bg-neutral-900 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]'
+                    : 'bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
+                } max-h-[90vh] overflow-y-auto`}
               >
-                <div className="text-center">
-                  <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
-                    <AlertCircle className="w-8 h-8 text-white" />
-                  </div>
-                  
-                  <h3 className={`text-2xl font-bold mb-3 ${
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className={`text-2xl font-bold ${
                     theme === 'dark' ? 'text-white' : 'text-neutral-900'
                   }`}>
-                    Free Preview Limit Reached
+                    Edit Prompt
                   </h3>
-                  
-                  <p className={`mb-6 ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}>
-                    You've viewed your 3 free prompts. Sign up to access all prompts and get 50 free generation credits!
-                  </p>
+                  <button
+                    onClick={() => setEditingPrompt(null)}
+                    className={`p-2 rounded-lg transition-colors border-2 ${
+                      theme === 'dark' 
+                        ? 'border-transparent hover:border-white hover:bg-neutral-800 text-neutral-400 hover:text-white' 
+                        : 'border-transparent hover:border-black hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900'
+                    }`}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
-                  <div className="flex gap-3">
+                <div className="space-y-4">
+                  {/* Title */}
+                  <div>
+                    <label className={`block text-sm font-bold mb-2 ${
+                      theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
+                    }`}>
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editingPrompt.title}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, title: e.target.value })}
+                      className={`w-full px-4 py-3 rounded-xl outline-none border-2 transition-all font-medium ${
+                        theme === 'dark'
+                          ? 'bg-neutral-800 border-neutral-700 focus:border-white text-white'
+                          : 'bg-neutral-50 border-neutral-200 focus:border-black text-neutral-900'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div>
+                    <label className={`block text-sm font-bold mb-2 ${
+                      theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
+                    }`}>
+                      Prompt Content
+                    </label>
+                    <textarea
+                      value={editingPrompt.content}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, content: e.target.value })}
+                      rows={6}
+                      className={`w-full px-4 py-3 rounded-xl outline-none border-2 transition-all resize-none font-medium ${
+                        theme === 'dark'
+                          ? 'bg-neutral-800 border-neutral-700 focus:border-white text-white'
+                          : 'bg-neutral-50 border-neutral-200 focus:border-black text-neutral-900'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Visibility */}
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="is_public"
+                      checked={editingPrompt.is_public}
+                      onChange={(e) => setEditingPrompt({ ...editingPrompt, is_public: e.target.checked })}
+                      className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <label htmlFor="is_public" className={`text-sm font-bold ${
+                      theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
+                    }`}>
+                      Make Public (Visible in Explore)
+                    </label>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-4">
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => navigate('/signup')}
-                      className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center gap-2"
+                      onClick={saveEditedPrompt}
+                      disabled={isUpdating}
+                      className={`flex-1 py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border-2 disabled:opacity-50 ${
+                        theme === 'dark'
+                        ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                        : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
+                      }`}
                     >
-                      <LogIn className="w-5 h-5" />
-                      Sign Up Free
+                      {isUpdating ? (
+                        <Sparkles className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
+                      {isUpdating ? 'Saving...' : 'Save Changes'}
                     </motion.button>
                     
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setShowViewLimitModal(false)
-                        navigate('/')
-                      }}
-                      className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                      onClick={() => setEditingPrompt(null)}
+                      disabled={isUpdating}
+                      className={`px-6 py-3 rounded-xl font-bold transition-all border-2 ${
                         theme === 'dark'
-                          ? 'bg-neutral-800 text-white hover:bg-neutral-700'
-                          : 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300'
+                          ? 'bg-neutral-800 text-white border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
+                          : 'bg-neutral-200 text-neutral-900 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
                       }`}
                     >
-                      Go Back
+                      Cancel
                     </motion.button>
                   </div>
                 </div>

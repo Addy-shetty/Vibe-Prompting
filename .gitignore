@@ -1,10 +1,16 @@
 # Dependencies
 node_modules
 
-# Environment Variables (NEVER COMMIT)
+# Environment Variables (⚠️ NEVER COMMIT - CONTAINS SECRETS)
 .env
 .env.local
 .env.production
+.env.development
+.env.*.local
+
+# Supabase Local (if using local Supabase)
+supabase/.branches
+supabase/.temp
 
 # Build Output
 dist

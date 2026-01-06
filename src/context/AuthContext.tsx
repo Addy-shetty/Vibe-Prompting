@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { sanitizeInput, isValidEmail, isValidUsername, rateLimiter } from '@/lib/security'
+import { sessionManager } from '@/lib/sessionManager'
+import toast from 'react-hot-toast'
 
 interface AuthContextType {
   user: User | null
@@ -18,6 +20,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Reusable function to upsert user profile
+const upsertUserProfile = async (user: User): Promise<void> => {
+  try {
+    const userRow = {
+      id: user.id,
+      email: user.email ?? undefined,
+      username: (user.user_metadata as any)?.username ?? (user.email ? user.email.split('@')[0] : undefined),
+      avatar_url: (user.user_metadata as any)?.avatar_url ?? undefined,
+    }
+    await supabase.from('profiles').upsert(userRow as any)
+  } catch (err) {
+    console.error('Failed to upsert user profile:', err)
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -28,22 +45,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      // If there's an active user session, ensure a profile row exists in the public profiles table
+      
+      // If there's an active user session, ensure a profile row exists
       if (session?.user) {
-        ;(async () => {
-          try {
-            const u = session.user
-            const userRow = {
-              id: u.id,
-              email: u.email ?? undefined,
-              username: (u.user_metadata as any)?.username ?? (u.email ? u.email.split('@')[0] : undefined),
-              avatar_url: (u.user_metadata as any)?.avatar_url ?? undefined,
-            }
-            await supabase.from('profiles').upsert(userRow as any)
-          } catch (err) {
-            console.error('Failed to upsert user profile on initial session:', err)
-          }
-        })()
+        upsertUserProfile(session.user)
+        
+        // Start session timeout monitoring
+        sessionManager.startMonitoring(() => {
+          toast.error('Your session has expired due to inactivity. Please sign in again.')
+          window.location.href = '/login'
+        })
       }
 
       setLoading(false)
@@ -55,22 +66,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
       // When a new user signs in (including OAuth providers), upsert a profile row
       if (session?.user) {
-        ;(async () => {
-          try {
-            const u = session.user
-            const userRow = {
-              id: u.id,
-              email: u.email ?? undefined,
-              username: (u.user_metadata as any)?.username ?? (u.email ? u.email.split('@')[0] : undefined),
-              avatar_url: (u.user_metadata as any)?.avatar_url ?? undefined,
-            }
-            await supabase.from('profiles').upsert(userRow as any)
-          } catch (err) {
-            console.error('Failed to upsert user profile on auth change:', err)
-          }
-        })()
+        upsertUserProfile(session.user)
       }
 
       setLoading(false)
@@ -211,6 +210,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    // Stop session monitoring
+    sessionManager.stopMonitoring()
     await supabase.auth.signOut()
   }
 

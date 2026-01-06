@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Check, Sparkles, Zap, Crown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
+import { Tiles } from '@/components/ui/tiles'
 
 interface PricingPlan {
   id: string
@@ -79,8 +80,11 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div className="relative min-h-screen bg-white dark:bg-gray-900">
+      <div className="fixed inset-0 z-0">
+        <Tiles />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -145,11 +149,11 @@ export default function PricingPage() {
                 className={`
                   relative h-full p-8 rounded-2xl border-2 
                   ${plan.popular 
-                    ? 'border-purple-500 dark:border-purple-400 shadow-xl shadow-purple-500/20' 
-                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+                    ? 'border-purple-500 dark:border-purple-400 shadow-[8px_8px_0px_0px_rgba(168,85,247,0.4)]' 
+                    : 'border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]'
                   }
-                  ${plan.gradient}
-                  backdrop-blur-sm transition-all duration-300
+                  bg-white dark:bg-neutral-900
+                  transition-all duration-300
                 `}
               >
                 {/* Icon */}
@@ -194,12 +198,12 @@ export default function PricingPage() {
                   onClick={() => handlePurchase(plan.id)}
                   disabled={selectedPlan === plan.id}
                   className={`
-                    w-full py-4 rounded-xl font-semibold text-lg
+                    w-full py-4 rounded-xl font-bold text-lg border-2
                     flex items-center justify-center gap-2
-                    transition-all duration-300 transform hover:scale-105
+                    transition-all duration-300 transform
                     ${plan.popular
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-xl hover:shadow-purple-500/30'
-                      : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-1'
+                      : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-1'
                     }
                     disabled:opacity-50 disabled:cursor-not-allowed
                   `}
@@ -247,7 +251,7 @@ export default function PricingPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 + i * 0.1 }}
-                className="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                className="p-6 rounded-xl bg-white dark:bg-neutral-900 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]"
               >
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   {faq.q}
