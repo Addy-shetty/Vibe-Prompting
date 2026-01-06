@@ -3,15 +3,38 @@
  * Provides input sanitization, validation, and security helpers
  */
 
+// Content Security Policy (CSP) directives
+export const CSP_DIRECTIVES = {
+  'default-src': ["'self'"],
+  'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://va.vercel-scripts.com'],
+  'style-src': ["'self'", "'unsafe-inline'"],
+  'img-src': ["'self'", 'data:', 'https:'],
+  'font-src': ["'self'", 'data:'],
+  'connect-src': ["'self'", 'https://*.supabase.co', 'https://generativelanguage.googleapis.com', 'https://openrouter.ai'],
+  'frame-ancestors': ["'none'"],
+}
+
 /**
  * Sanitize string input to prevent XSS attacks
+ * Removes dangerous HTML tags, scripts, and event handlers
  */
 export function sanitizeInput(input: string): string {
+  if (!input || typeof input !== 'string') return ''
+  
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove < and >
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    // Remove HTML tags
+    .replace(/<\/?[^>]+(>|$)/g, '')
+    // Remove javascript: protocol
+    .replace(/javascript:/gi, '')
+    // Remove data: protocol (can be used for XSS)
+    .replace(/data:text\/html/gi, '')
+    // Remove event handlers
+    .replace(/on\w+\s*=/gi, '')
+    // Remove null bytes
+    .replace(/\0/g, '')
+    // Limit to reasonable length
+    .slice(0, 10000)
 }
 
 /**
@@ -100,6 +123,70 @@ export function checkPasswordStrength(password: string): PasswordStrength {
     feedback,
   }
 }
+
+/**
+ * CSRF Token Management
+ * Generates and validates CSRF tokens for form submissions
+ */
+class CSRFTokenManager {
+  private readonly tokenKey = 'csrf_token'
+  private readonly tokenExpiry = 60 * 60 * 1000 // 1 hour
+
+  generateToken(): string {
+    const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+    
+    const expiry = Date.now() + this.tokenExpiry
+    sessionStorage.setItem(this.tokenKey, JSON.stringify({ token, expiry }))
+    
+    return token
+  }
+
+  getToken(): string | null {
+    try {
+      const data = sessionStorage.getItem(this.tokenKey)
+      if (!data) return null
+
+      const { token, expiry } = JSON.parse(data)
+      
+      if (Date.now() > expiry) {
+        this.clearToken()
+        return null
+      }
+      
+      return token
+    } catch {
+      return null
+    }
+  }
+
+  validateToken(token: string): boolean {
+    const storedToken = this.getToken()
+    if (!storedToken) return false
+    
+    // Constant-time comparison to prevent timing attacks
+    if (token.length !== storedToken.length) return false
+    
+    let result = 0
+    for (let i = 0; i < token.length; i++) {
+      result |= token.charCodeAt(i) ^ storedToken.charCodeAt(i)
+    }
+    
+    return result === 0
+  }
+
+  clearToken(): void {
+    sessionStorage.removeItem(this.tokenKey)
+  }
+
+  refreshToken(): string {
+    this.clearToken()
+    return this.generateToken()
+  }
+}
+
+export const csrfToken = new CSRFTokenManager()
 
 /**
  * Rate limiting helper (client-side basic check)
