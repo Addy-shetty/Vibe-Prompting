@@ -12,6 +12,10 @@ import MyPromptsPage from '@/pages/MyPromptsPage'
 import DocsPage from '@/pages/DocsPage'
 import { useTheme } from '@/context/ThemeContext'
 
+/**
+ * HomePage component - renders the landing page with Hero section
+ * @returns {JSX.Element} The home page component
+ */
 function HomePage() {
   return <Hero />
 }
