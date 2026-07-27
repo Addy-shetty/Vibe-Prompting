@@ -7,10 +7,10 @@ import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useCredits } from '@/hooks/useCreditsSecure'
 import toast, { Toaster } from 'react-hot-toast'
-import { 
-  Copy, 
-  Trash2, 
-  Search, 
+import {
+  Copy,
+  Trash2,
+  Search,
   Filter,
   Calendar,
   Sparkles,
@@ -33,6 +33,7 @@ import {
   X,
   Save
 } from 'lucide-react'
+import { LoadingSkeleton, EmptyState } from '@/components/ui/StateComponents'
 
 interface Prompt {
   id: string
@@ -84,9 +85,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function MyPromptsPage() {
   const { theme } = useTheme()
-  if (!user) {
-    return <div className="min-h-screen pt-20 px-6 flex items-center justify-center"><EmptyState icon={Lock} title="Sign in required" description="Sign in to view your prompt library." actionLabel="Sign In" actionTo="/login" /></div>
-  }
   const { user } = useAuth()
   const navigate = useNavigate()
   
@@ -313,9 +311,9 @@ export default function MyPromptsPage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
-    show: { 
-      opacity: 1, 
-      y: 0, 
+    show: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       transition: {
         type: 'spring',
@@ -325,20 +323,17 @@ export default function MyPromptsPage() {
     }
   }
 
-  if (loading) {
+  // Guest redirect
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          >
-            <Sparkles className="w-8 h-8 text-purple-500" />
-          </motion.div>
-          <p className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}>
-            Loading your prompts...
-          </p>
-        </div>
+      <div className="min-h-screen pt-20 px-6 flex items-center justify-center">
+        <EmptyState
+          icon={Lock}
+          title="Sign in required"
+          description="Sign in to view your prompt library."
+          actionLabel="Sign In"
+          actionTo="/login"
+        />
       </div>
     )
   }
@@ -439,6 +434,11 @@ export default function MyPromptsPage() {
             ))}
           </div>
         </motion.div>
+
+        {/* Loading State */}
+        {loading && (
+          <LoadingSkeleton variant="card" count={6} />
+        )}
 
         {/* Empty State */}
         {filteredPrompts.length === 0 && !loading && (

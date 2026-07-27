@@ -6,9 +6,9 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast'
-import { 
-  Copy, 
-  Search, 
+import {
+  Copy,
+  Search,
   Calendar,
   Sparkles,
   Zap,
@@ -25,6 +25,7 @@ import {
   Terminal,
   Globe2
 } from 'lucide-react'
+import { LoadingSkeleton, EmptyState } from '@/components/ui/StateComponents'
 
 interface Prompt {
   id: string
@@ -188,9 +189,9 @@ export default function ExplorePage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
-    show: { 
-      opacity: 1, 
-      y: 0, 
+    show: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       transition: {
         type: 'spring',
@@ -198,24 +199,6 @@ export default function ExplorePage() {
         damping: 24
       }
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          >
-            <Sparkles className="w-8 h-8 text-[#FFD700]" />
-          </motion.div>
-          <p className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}>
-            Loading community prompts...
-          </p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -300,23 +283,18 @@ export default function ExplorePage() {
           </div>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <LoadingSkeleton variant="card" count={6} />
+        )}
+
         {/* Empty State */}
         {filteredPrompts.length === 0 && !loading && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20 rounded-xl border-2 bg-[#1A1A1A] border-[#333333] shadow-[4px_4px_0px_0px_#000]"
-          >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center border-2 bg-[#0A0A0A] border-[#333333] text-[#A1A1AA]">
-              <Search className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-white font-mono">
-              No prompts found
-            </h3>
-            <p className="mb-6 text-[#A1A1AA]">
-              Try adjusting your search or filters
-            </p>
-          </motion.div>
+          <EmptyState
+            icon={Search}
+            title="No prompts found"
+            description="Try adjusting your search or filters"
+          />
         )}
 
         {/* Bento Grid */}

@@ -1,3 +1,4 @@
+import toast from "react-hot-toast"
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { 
@@ -58,12 +59,16 @@ export default function SettingsPage() {
 
       if (updateError) {
         setError(updateError.message)
+        toast.error(updateError.message, { duration: 4000 })
       } else {
         setSuccess('Profile updated successfully!')
+        toast.success('Profile updated!', { duration: 3000 })
         setTimeout(() => setSuccess(null), 3000)
       }
-    } catch {
-      setError('Failed to update profile. Please try again.')
+    } catch (err) {
+      const errorMessage = 'Failed to update profile. Please try again.'
+      setError(errorMessage)
+      toast.error(errorMessage, { duration: 4000 })
     } finally {
       setIsSaving(false)
     }
