@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
 }
 
-// Credit costs by tier (simpler = more credits)
+// Credit costs by tier
 const CREDIT_COSTS = {
   basic: 5,
   advanced: 3,
@@ -18,17 +18,6 @@ interface GenerateRequest {
   tier: 'basic' | 'advanced' | 'expert'
   requestId: string
   metadata?: Record<string, unknown>
-}
-
-// Fallback prompt generator when all LLMs fail
-function generateFallbackPrompt(input: string, tier: string): string {
-  const templates = {
-    basic: `Enhanced prompt: ${input}\n\nPlease provide a clear and detailed response with examples where appropriate.`,
-    advanced: `Act as an expert in this domain. Regarding: "${input}"\n\nPlease provide:\n1. Detailed analysis\n2. Step-by-step approach\n3. Best practices\n4. Concrete examples\n5. Potential pitfalls to avoid`,
-    expert: `You are a world-class expert with deep knowledge in this field. Task: "${input}"\n\nProvide a comprehensive response including:\n\n1. Executive Summary\n2. Detailed Technical Analysis\n3. Implementation Strategy with step-by-step breakdown\n4. Code examples (where applicable)\n5. Edge cases and error handling\n6. Performance considerations\n7. Security best practices\n8. Testing approach\n9. Documentation requirements\n10. Real-world examples from production systems\n\nEnsure your response is actionable and production-ready.`,
-  }
-
-  return templates[tier as keyof typeof templates] || templates.basic
 }
 
 // Prompt validation constants
@@ -57,6 +46,8 @@ function validatePrompt(prompt: string): { valid: boolean; error?: string } {
     /javascript:/i,
     /on\w+\s*=/i,
     /<iframe/i,
+    /<object/i,
+    /<embed/i,
   ]
   
   if (suspiciousPatterns.some(pattern => pattern.test(trimmed))) {
@@ -64,6 +55,17 @@ function validatePrompt(prompt: string): { valid: boolean; error?: string } {
   }
 
   return { valid: true }
+}
+
+// Fallback prompt generator when all LLMs fail
+function generateFallbackPrompt(input: string, tier: string): string {
+  const templates = {
+    basic: `Enhanced prompt: ${input}\n\nPlease provide a clear and detailed response with examples where appropriate.`,
+    advanced: `Act as an expert in this domain. Regarding: "${input}"\n\nPlease provide:\n1. Detailed analysis\n2. Step-by-step approach\n3. Best practices\n4. Concrete examples\n5. Potential pitfalls to avoid`,
+    expert: `You are a world-class expert with deep knowledge in this field. Task: "${input}"\n\nProvide a comprehensive response including:\n\n1. Executive Summary\n2. Detailed Technical Analysis\n3. Implementation Strategy with step-by-step breakdown\n4. Code examples (where applicable)\n5. Edge cases and error handling\n6. Performance considerations\n7. Security best practices\n8. Testing approach\n9. Documentation requirements\n10. Real-world examples from production systems\n\nEnsure your response is actionable and production-ready.`,
+  }
+
+  return templates[tier as keyof typeof templates] || templates.basic
 }
 
 serve(async (req) => {
@@ -109,7 +111,7 @@ serve(async (req) => {
       )
     }
 
-    // 2.5. Validate input content (XSS prevention, length limits)
+    // 3. Validate input content
     const validation = validatePrompt(userInput)
     if (!validation.valid) {
       return new Response(
@@ -118,7 +120,7 @@ serve(async (req) => {
       )
     }
 
-    // 3. Validate tier
+    // 4. Validate tier
     if (!['basic', 'advanced', 'expert'].includes(tier)) {
       return new Response(
         JSON.stringify({ error: 'Invalid tier. Must be: basic, advanced, or expert' }),
@@ -128,14 +130,14 @@ serve(async (req) => {
 
     const creditsToConsume = CREDIT_COSTS[tier]
 
-    // 4. Create service_role client for RPC calls
+    // 5. Create service_role client for RPC calls
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // 5. Check rate limit (10 requests per minute)
-    const rateLimitResult = await supabaseAdmin.rpc('check_rate_limit', {
+    // 6. Check rate limit (10 requests per minute) - Using new v3 function
+    const rateLimitResult = await supabaseAdmin.rpc('check_rate_limit_v3', {
       p_user_id: user.id,
       p_action: 'generate_prompt',
       p_max_requests: 10,
@@ -144,29 +146,35 @@ serve(async (req) => {
 
     if (rateLimitResult.error) {
       console.error('Rate limit check failed:', rateLimitResult.error)
-      // Don't fail on rate limit errors, just log
     } else if (rateLimitResult.data && !rateLimitResult.data.allowed) {
       return new Response(
         JSON.stringify({
           error: 'rate_limit_exceeded',
           message: 'Too many requests. Please wait before trying again.',
-          retryAfter: rateLimitResult.data.retry_after_seconds,
+          retryAfter: rateLimitResult.data.retry_after,
         }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // 6. Consume credits atomically
-    const creditResult = await supabaseAdmin.rpc('consume_user_credits', {
+    // 7. Consume credits atomically - Using new v3 function
+    const creditResult = await supabaseAdmin.rpc('consume_credits', {
       p_user_id: user.id,
-      p_credits_to_consume: creditsToConsume,
+      p_amount: creditsToConsume,
+      p_type: 'usage',
+      p_description: `Generated ${tier} tier prompt`,
       p_request_id: requestId,
-      p_action: 'generate_prompt',
-      p_metadata: { tier, input_length: userInput.length, ...metadata },
     })
 
     if (creditResult.error) {
-      throw new Error('Credit consumption failed: ' + creditResult.error.message)
+      console.error('Credit consumption error:', creditResult.error)
+      return new Response(
+        JSON.stringify({
+          error: 'credit_system_error',
+          message: 'Failed to process credits. Please try again.',
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     const creditData = creditResult.data
@@ -183,7 +191,7 @@ serve(async (req) => {
       )
     }
 
-    // 7. Generate prompt using LLM (with fallback)
+    // 8. Generate prompt using LLM
     let generatedPrompt: string
     let provider: string
 
@@ -235,7 +243,7 @@ serve(async (req) => {
       console.error('Gemini failed:', geminiError)
 
       try {
-        // Fallback: OpenRouter (if API key available)
+        // Fallback: OpenRouter
         const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
         if (!openRouterKey) {
           throw new Error('No fallback provider available')
@@ -279,49 +287,51 @@ serve(async (req) => {
       } catch (openRouterError) {
         console.error('OpenRouter failed:', openRouterError)
         
-        // Final fallback: Template-based enhancement
+        // Final fallback: Template-based
         generatedPrompt = generateFallbackPrompt(userInput, tier)
         provider = 'fallback'
       }
     }
 
-    // 8. Save to database
-    const { error: saveError } = await supabaseAdmin.from('prompts').insert({
+    // 9. Save prompt to database
+    const { data: promptData, error: saveError } = await supabaseAdmin.from('prompts').insert({
       user_id: user.id,
-      original_prompt: userInput,
-      enhanced_prompt: generatedPrompt,
-      tier,
+      title: userInput.substring(0, 200),
+      content: generatedPrompt,
+      category: metadata?.category || 'General',
+      tier_used: tier,
       credits_used: creditsToConsume,
-      provider,
-      metadata: { request_id: requestId, ...metadata },
-    })
+      is_public: false,
+      tags: metadata?.tags || [],
+    }).select().single()
 
     if (saveError) {
       console.error('Failed to save prompt:', saveError)
-      // Don't fail the request, just log
     }
 
-    // 9. Return success
+    // 10. Return success response
     return new Response(
       JSON.stringify({
         success: true,
         prompt: generatedPrompt,
         creditsUsed: creditsToConsume,
-        creditsRemaining: creditData.new_credits,
+        creditsRemaining: creditData.credits_remaining,
         tier,
         provider,
+        promptId: promptData?.id || null,
       }),
       {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
+
   } catch (error) {
     console.error('Edge function error:', error)
     return new Response(
       JSON.stringify({
         error: 'internal_server_error',
-        message: error.message,
+        message: 'An unexpected error occurred. Please try again.',
       }),
       {
         status: 500,

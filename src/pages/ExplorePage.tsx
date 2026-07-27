@@ -208,7 +208,7 @@ export default function ExplorePage() {
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           >
-            <Sparkles className="w-8 h-8 text-purple-500" />
+            <Sparkles className="w-8 h-8 text-[#FFD700]" />
           </motion.div>
           <p className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}>
             Loading community prompts...
@@ -239,14 +239,12 @@ export default function ExplorePage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-3">
-            <Globe2 className={`w-8 h-8 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
-            <h1 className={`text-4xl md:text-5xl font-bold ${
-              theme === 'dark' ? 'text-white' : 'text-neutral-900'
-            }`}>
+            <Globe2 className="w-8 h-8 text-[#FFD700]" />
+            <h1 className="text-4xl md:text-5xl font-bold text-white font-mono uppercase tracking-tight">
               Explore
             </h1>
           </div>
-          <p className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}>
+          <p className="text-[#A1A1AA]">
             Discover {prompts.length} public prompts from the community
           </p>
         </motion.div>
@@ -259,22 +257,14 @@ export default function ExplorePage() {
           className="mb-8 flex flex-col md:flex-row gap-4"
         >
           {/* Search */}
-          <div className={`flex-1 relative rounded-xl border-2 ${
-            theme === 'dark' 
-              ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]' 
-              : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-          } overflow-hidden`}>
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-            }`} />
+          <div className="flex-1 relative rounded-xl border-2 bg-[#1A1A1A] border-[#333333] shadow-[4px_4px_0px_0px_#000] focus-within:border-[#FFD700] transition-colors overflow-hidden">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A1A1AA]" />
             <input
               type="text"
               placeholder="Search community prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-12 pr-4 py-3 bg-transparent outline-none font-medium ${
-                theme === 'dark' ? 'text-white placeholder:text-neutral-500' : 'text-neutral-900 placeholder:text-neutral-400'
-              }`}
+              className="w-full pl-12 pr-4 py-3 bg-transparent outline-none font-medium text-white placeholder:text-[#555]"
             />
           </div>
 
@@ -286,12 +276,8 @@ export default function ExplorePage() {
               onClick={() => setSelectedCategory(null)}
               className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all font-bold border-2 ${
                 selectedCategory === null
-                  ? theme === 'dark'
-                    ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                    : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
-                  : theme === 'dark'
-                    ? 'bg-neutral-900 border-white text-neutral-400 hover:text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                    : 'bg-white border-black text-neutral-600 hover:text-neutral-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
+                  ? 'bg-[#FFD700] border-[#000] text-[#0A0A0A] shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-y-0'
+                  : 'bg-[#1A1A1A] border-[#333333] text-[#A1A1AA] hover:text-white shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-y-0 hover:border-[#FFD700]'
               }`}
             >
               All
@@ -304,12 +290,8 @@ export default function ExplorePage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all font-bold border-2 ${
                   selectedCategory === category
-                    ? theme === 'dark'
-                      ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                      : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
-                    : theme === 'dark'
-                      ? 'bg-neutral-900 border-white text-neutral-400 hover:text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                      : 'bg-white border-black text-neutral-600 hover:text-neutral-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
+                    ? 'bg-[#FFD700] border-[#000] text-[#0A0A0A] shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-y-0'
+                    : 'bg-[#1A1A1A] border-[#333333] text-[#A1A1AA] hover:text-white shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-y-0 hover:border-[#FFD700]'
                 }`}
               >
                 {category}
@@ -323,25 +305,15 @@ export default function ExplorePage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`text-center py-20 rounded-xl border-2 ${
-              theme === 'dark' 
-                ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]' 
-                : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-            }`}
+            className="text-center py-20 rounded-xl border-2 bg-[#1A1A1A] border-[#333333] shadow-[4px_4px_0px_0px_#000]"
           >
-            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center border-2 ${
-              theme === 'dark' 
-                ? 'bg-neutral-800 border-white text-neutral-400' 
-                : 'bg-neutral-100 border-black text-neutral-500'
-            }`}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center border-2 bg-[#0A0A0A] border-[#333333] text-[#A1A1AA]">
               <Search className="w-8 h-8" />
             </div>
-            <h3 className={`text-xl font-bold mb-2 ${
-              theme === 'dark' ? 'text-white' : 'text-neutral-900'
-            }`}>
+            <h3 className="text-xl font-bold mb-2 text-white font-mono">
               No prompts found
             </h3>
-            <p className={`mb-6 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>
+            <p className="mb-6 text-[#A1A1AA]">
               Try adjusting your search or filters
             </p>
           </motion.div>
@@ -364,19 +336,11 @@ export default function ExplorePage() {
                   variants={itemVariants}
                   className={`${getBentoClass(index)} group relative`}
                 >
-                  <div className={`h-full rounded-xl border-2 overflow-hidden flex flex-col ${
-                    theme === 'dark'
-                      ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
-                      : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                  } transition-all duration-300`}>
+                  <div className="h-full rounded-xl border-2 overflow-hidden flex flex-col bg-[#1A1A1A] border-[#333333] shadow-[4px_4px_0px_0px_#000] hover:border-[#FFD700]/40 transition-all duration-300">
                     
                     {/* Category Badge */}
                     <div className="absolute top-3 left-3 z-10">
-                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                        theme === 'dark' 
-                          ? 'bg-neutral-800 border-white text-white' 
-                          : 'bg-white border-black text-black'
-                      }`}>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 text-xs font-bold shadow-[2px_2px_0px_0px_#000] bg-[#0A0A0A] border-[#333333] text-[#FFD700]">
                         <Icon className="w-3 h-3" />
                         {prompt.category || 'General'}
                       </div>
@@ -385,14 +349,10 @@ export default function ExplorePage() {
                     {/* Content */}
                     <div className="p-6 h-full flex flex-col justify-between">
                       <div className="space-y-3 pt-8">
-                        <p className={`text-lg font-bold leading-tight ${
-                          theme === 'dark' ? 'text-white' : 'text-neutral-900'
-                        }`}>
+                        <p className="text-lg font-bold leading-tight text-white">
                           {prompt.title}
                         </p>
-                        <p className={`text-sm line-clamp-3 font-medium ${
-                          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                        }`}>
+                        <p className="text-sm line-clamp-3 font-medium text-[#A1A1AA]">
                           {prompt.content}
                         </p>
                         
@@ -402,19 +362,13 @@ export default function ExplorePage() {
                             {prompt.tags.slice(0, 3).map((tag, tagIndex) => (
                               <span
                                 key={tagIndex}
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border-2 text-xs font-bold ${
-                                  theme === 'dark'
-                                    ? 'bg-neutral-800 border-white text-neutral-300'
-                                    : 'bg-neutral-100 border-black text-neutral-700'
-                                }`}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border-2 text-xs font-bold bg-[#0A0A0A] border-[#333333] text-[#A1A1AA]"
                               >
                                 #{tag}
                               </span>
                             ))}
                             {prompt.tags.length > 3 && (
-                              <span className={`text-xs font-bold ${
-                                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                              }`}>
+                              <span className="text-xs font-bold text-[#555]">
                                 +{prompt.tags.length - 3} more
                               </span>
                             )}
@@ -423,10 +377,8 @@ export default function ExplorePage() {
                       </div>
 
                       {/* Footer */}
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t-2 border-dashed border-neutral-700/20">
-                        <div className={`flex items-center gap-1 text-xs font-bold ${
-                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-                        }`}>
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t-2 border-dashed border-[#333333]/40">
+                        <div className="flex items-center gap-1 text-xs font-bold text-[#555]">
                           <Calendar className="w-3 h-3" />
                           {formatDate(prompt.created_at)}
                         </div>
@@ -436,11 +388,7 @@ export default function ExplorePage() {
                             whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => copyToClipboard(prompt.content)}
-                            className={`p-2 rounded-lg border-2 transition-all ${
-                              theme === 'dark'
-                                ? 'bg-neutral-800 border-white text-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                                : 'bg-white border-black text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
-                            }`}
+                            className="p-2 rounded-lg border-2 transition-all bg-[#0A0A0A] border-[#333333] text-[#A1A1AA] shadow-[2px_2px_0px_0px_#000] hover:shadow-none hover:translate-y-0 hover:text-[#FFD700] hover:border-[#FFD700]"
                           >
                             <Copy className="w-4 h-4" />
                           </motion.button>

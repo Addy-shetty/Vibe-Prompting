@@ -15,7 +15,11 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
-import Footer from './Footer'
+import SplitFlapText from '@/components/ui/SplitFlapText'
+import { SideNav } from '@/components/SideNav'
+import { CursorFollower } from '@/components/CursorFollower'
+import { SignalsSection } from '@/components/SignalsSection'
+import { HighlightText } from '@/components/HighlightText'
 
 export default function HeroV3() {
   const { theme } = useTheme()
@@ -68,15 +72,24 @@ export default function HeroV3() {
   const isDark = theme === 'dark'
 
   return (
-    <div className="relative w-full min-h-screen font-sans overflow-hidden bg-transparent">
+    <div className="relative w-full min-h-screen font-sans overflow-hidden bg-[#0a0a0a]">
+      
+      {/* Cursor Follower Orb */}
+      <CursorFollower />
+      
+      {/* Side Navigation */}
+      <SideNav />
+      
+      {/* Tech Noir Grid Background */}
+      <div className="absolute inset-0 noir-grid-bg opacity-50" />
       
       {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-transparent">
-        {/* Floating Code Snippets */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Floating Code Snippets - Yellow tinted */}
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute text-neo-blue opacity-10 font-mono text-xs"
+            className="absolute text-noir-yellow opacity-20 font-mono text-xs"
             initial={{ 
               x: Math.random() * 100 + '%', 
               y: Math.random() * 100 + '%',
@@ -96,81 +109,69 @@ export default function HeroV3() {
           </motion.div>
         ))}
         
-        {/* Gradient Mesh */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-neo-blue opacity-5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-neo-pink opacity-5 rounded-full blur-3xl"></div>
+        {/* Glowing Orbs */}
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-noir-yellow opacity-5 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-noir-yellow opacity-3 rounded-full blur-[80px]"></div>
       </div>
       
       {/* Hero Section */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12 md:pt-32 md:pb-20">
+      <div id="hero" className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-12 md:pt-36 md:pb-20">
         <div className="flex flex-col items-center text-center">
-          {/* Badge - Neo-Brutalist Style */}
+          {/* Badge - Tech Noir Style */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-3 px-6 py-3 mb-10 border-3 border-black bg-neo-sunshine shadow-neo-sm rounded-neo transform -rotate-2 hover:rotate-0 transition-transform cursor-default"
+            className="inline-flex items-center gap-3 px-5 py-2.5 mb-10 border border-noir-yellow/30 bg-noir-yellow/5 backdrop-blur-sm"
           >
-            <span className="relative flex h-4 w-4">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-black"></span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-noir-yellow opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-noir-yellow shadow-glow-yellow-sm"></span>
             </span>
-            <span className="font-black uppercase tracking-wider text-base">System v2.0 Online</span>
+            <span className="font-display uppercase tracking-widest text-sm text-noir-yellow">System v2.0 Online</span>
           </motion.div>
 
-          {/* Headline */}
-          <h1 className={`text-5xl md:text-7xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.85] mb-10 ${
-            isDark ? 'text-white' : 'text-black'
-          }`}>
-            Prompt Engineering <br />
-            <span className="inline-block mt-3 text-neo-blue">
-              For Developers
+          {/* Headline with Split-Flap Animation */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold uppercase tracking-wide leading-[0.9] mb-10 text-white">
+            <SplitFlapText text="Prompt Engineering" delay={0.3} stagger={0.04} /> <br />
+            <span className="inline-block mt-4 text-noir-yellow text-glow">
+              <SplitFlapText text="For Developers" delay={0.8} stagger={0.05} />
             </span>
           </h1>
 
-          <p className={`max-w-2xl mx-auto text-xl md:text-2xl font-mono font-bold mb-12 leading-relaxed ${
-            isDark ? 'text-neutral-300' : 'text-black'
-          }`}>
+          <p className="max-w-2xl mx-auto text-lg md:text-xl font-sans text-neutral-400 mb-12 leading-relaxed">
             Stop wrestling with generic AI responses. Generate production-ready prompts optimized for coding, debugging, and architecture.
           </p>
 
-          {/* Input Section */}
+          {/* Input Section - Tech Noir Style */}
           <div className="w-full max-w-3xl relative z-20 mb-16">
-            <div className={`border-3 p-3 shadow-neo-lg transform rotate-1 hover:rotate-0 transition-all duration-300 ${
-              isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-black'
-            }`}>
+            <div className="border border-neutral-800 bg-noir-gray/50 backdrop-blur-sm p-1 hover:border-noir-yellow/30 transition-all duration-300 group">
               <form onSubmit={handleQuickGenerate} className="flex items-stretch">
-                <div className={`flex items-center pl-5 ${
-                  isDark ? 'text-white' : 'text-black'
-                }`}>
-                  <Terminal className="w-7 h-7" />
+                <div className="flex items-center pl-5 text-noir-yellow">
+                  <Terminal className="w-6 h-6" />
                 </div>
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Describe required system parameters..."
-                  className={`flex-1 px-5 py-5 bg-transparent border-none focus:ring-0 text-lg font-mono font-bold placeholder:text-neutral-400 ${
-                    isDark ? 'text-white' : 'text-black'
-                  }`}
+                  className="flex-1 px-5 py-4 bg-transparent border-none focus:ring-0 focus:outline-none text-lg font-mono text-white placeholder:text-neutral-600"
                 />
                 <button
                   type="submit"
-                  className="bg-neo-pink text-white px-10 py-5 font-black uppercase tracking-wider hover:bg-neo-blue transition-all border-l-3 border-black shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] duration-150"
+                  className="bg-noir-yellow text-noir-black px-8 py-4 font-display font-bold uppercase tracking-wider hover:shadow-glow-yellow transition-all duration-300"
                 >
-                  Execute <ArrowRight className="w-6 h-6 ml-2 inline-block" />
+                  ⚡ Generate High-ROI Prompts
                 </button>
               </form>
             </div>
             
-            {/* Quick Tags */}
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            {/* Quick Tags - Tech Noir */}
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               {['React Component', 'SQL Query', 'API Endpoint', 'Unit Tests'].map((tag, i) => (
                 <button
                   key={tag}
                   onClick={() => setInput(tag)}
-                  className={`px-6 py-3 border-3 text-sm font-black uppercase shadow-neo-sm hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] hover:bg-neo-yellow transition-all duration-150 ${
-                    isDark ? 'bg-neutral-800 border-neutral-600 text-white' : 'bg-white border-black text-black'
-                  }`}
+                  className="px-5 py-2.5 border border-neutral-800 text-sm font-display uppercase tracking-wider text-neutral-400 hover:border-noir-yellow/50 hover:text-noir-yellow hover:bg-noir-yellow/5 transition-all duration-300"
                 >
                   {tag}
                 </button>
@@ -183,7 +184,7 @@ export default function HeroV3() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="mt-16 flex flex-wrap justify-center gap-12 md:gap-20"
+            className="mt-16 flex flex-wrap justify-center gap-8 md:gap-12"
           >
             {[
               { icon: Code, label: 'React' },
@@ -194,248 +195,201 @@ export default function HeroV3() {
             ].map((tech, i) => (
             <motion.div 
               key={i} 
-              whileHover={{ scale: 1.15, y: -5 }}
-              className="flex items-center gap-3 cursor-pointer opacity-40 hover:opacity-100 transition-opacity"
+              whileHover={{ scale: 1.1, y: -3 }}
+              className="flex items-center gap-2 cursor-pointer transition-all duration-300 group px-4 py-2 border border-neutral-800 hover:border-noir-yellow/50 bg-neutral-900/50 hover:bg-noir-yellow/10"
             >
-              <tech.icon className={`w-7 h-7 ${
-                isDark ? 'text-white' : 'text-black'
-              }`} />
-              <span className="font-black uppercase text-sm">{tech.label}</span>
+              <tech.icon className="w-5 h-5 text-neutral-400 group-hover:text-noir-yellow transition-colors" />
+              <span className="font-display uppercase text-sm text-neutral-300 group-hover:text-noir-yellow transition-colors">{tech.label}</span>
             </motion.div>
           ))}
           </motion.div>
         </div>
       </div>
 
-      {/* Live Prompt Preview/Demo Section */}
-      <div className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <h2 className={`text-4xl md:text-5xl font-black uppercase mb-4 tracking-tighter ${
-            isDark ? 'text-white' : 'text-black'
-          }`}>
-            See It In <span className="text-neo-pink">Action</span>
-          </h2>
-          <p className={`text-xl font-mono font-bold ${
-            isDark ? 'text-neutral-400' : 'text-neutral-600'
-          }`}>Watch your prompts transform in real-time</p>
+      {/* What's New - Feature Updates Section */}
+      <SignalsSection />
+
+      {/* Experiments Section - Prompt Showcase */}
+      <div id="demo" className="py-32 pl-6 md:pl-28">
+        {/* Section Header */}
+        <div className="mb-16 pr-6 md:pr-12">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-noir-yellow">02 / Experiments</span>
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between mt-4 gap-6">
+            <h2 className="font-display text-5xl md:text-7xl tracking-tight text-white">PROMPT<br/>SHOWCASE</h2>
+            <p className="text-neutral-400 font-mono text-sm max-w-md leading-relaxed">
+              Real transformation examples across development, DevOps, testing, and security domains.
+            </p>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        {/* Category Tabs */}
+        <div className="flex gap-0 overflow-x-auto mb-12 pr-6 md:pr-12" style={{ scrollbarWidth: "none" }}>
+          {[
+            { id: 0, label: 'DEVELOPMENT', active: true },
+            { id: 1, label: 'DEVOPS' },
+            { id: 2, label: 'TESTING' },
+            { id: 3, label: 'SECURITY' },
+            { id: 4, label: 'ARCHITECTURE' },
+          ].map((cat, i) => (
+            <button
+              key={cat.id}
+              onClick={() => setDemoStep(cat.id)}
+              className={`flex-shrink-0 px-8 py-4 font-mono text-xs uppercase tracking-widest transition-all duration-300 border-b-2 ${
+                demoStep === cat.id 
+                  ? 'text-noir-yellow border-noir-yellow bg-noir-yellow/5' 
+                  : 'text-neutral-500 border-neutral-800 hover:text-neutral-300 hover:border-neutral-600'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Before/After Cards */}
+        <div className="grid md:grid-cols-2 gap-6 pr-6 md:pr-12">
           {/* Before */}
-          <div className={`border-3 p-8 shadow-neo rounded-neo ${
-            isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-black'
-          }`}>
+          <div className="border border-neutral-800 bg-neutral-900/50 p-8 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="px-4 py-2 bg-neo-pink text-white font-black uppercase text-sm border-2 border-black rounded-neo">
-                Before
+              <div className="px-4 py-1.5 bg-red-500/20 text-red-400 font-mono uppercase text-[10px] tracking-widest border border-red-500/30">
+                Input
               </div>
-              <span className={`font-mono font-bold text-sm ${
-                isDark ? 'text-neutral-400' : 'text-neutral-500'
-              }`}>Your Input</span>
+              <span className="font-mono text-[10px] text-neutral-600 uppercase tracking-widest">Raw Prompt</span>
             </div>
             <AnimatePresence mode="wait">
               <motion.div
                 key={demoStep}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={`font-mono text-base leading-relaxed ${
-                  isDark ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="font-mono text-base leading-relaxed text-neutral-400"
               >
                 {demoStep === 0 && '"Build a React dashboard with authentication"'}
-                {demoStep === 1 && '"Optimize this slow database query"'}
-                {demoStep === 2 && '"Fix TypeScript type errors in my API"'}
+                {demoStep === 1 && '"Set up CI/CD pipeline for my Node.js app"'}
+                {demoStep === 2 && '"Write tests for my user service"'}
+                {demoStep === 3 && '"Check my API for security vulnerabilities"'}
+                {demoStep === 4 && '"Design a microservices architecture"'}
               </motion.div>
             </AnimatePresence>
           </div>
 
           {/* After */}
-          <div className="bg-neo-green border-3 border-black p-8 shadow-neo rounded-neo">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="px-4 py-2 bg-black text-white font-black uppercase text-sm border-2 border-black rounded-neo">
-                After
+          <div className="border border-noir-yellow/30 bg-noir-yellow/5 p-8 backdrop-blur-sm relative overflow-hidden group">
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-noir-yellow/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="px-4 py-1.5 bg-noir-yellow text-noir-black font-mono uppercase text-[10px] tracking-widest">
+                  Output
+                </div>
+                <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest">AI-Enhanced</span>
+                <Sparkles className="w-4 h-4 text-noir-yellow ml-auto" />
               </div>
-              <span className="font-mono font-bold text-sm">AI-Enhanced Prompt</span>
-              <Sparkles className="w-5 h-5 text-black ml-auto" />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={demoStep}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="font-mono text-xs text-neutral-300 leading-relaxed"
+                >
+                  {demoStep === 0 && (
+                    <span>"Act as a <span className="text-noir-yellow">Senior React Architect</span> with Next.js 14 expertise. Build a production-grade admin dashboard with: <span className="text-noir-yellow">RBAC</span>, protected routes via middleware, <span className="text-noir-yellow">JWT refresh logic</span>, secure sessions. Apply: component composition, Zustand state management, error boundaries, <span className="text-noir-yellow">type-safe API calls</span>. Include folder structure + security considerations."</span>
+                  )}
+                  {demoStep === 1 && (
+                    <span>"Act as a <span className="text-noir-yellow">DevOps Engineer</span> specializing in GitHub Actions and AWS. Design a production CI/CD pipeline with: <span className="text-noir-yellow">multi-stage Docker builds</span>, automated testing gates, <span className="text-noir-yellow">blue-green deployments</span>, secrets management via AWS Secrets Manager, <span className="text-noir-yellow">Slack notifications</span>, rollback strategies. Include: Terraform IaC, cost optimization, and monitoring with CloudWatch."</span>
+                  )}
+                  {demoStep === 2 && (
+                    <span>"Act as a <span className="text-noir-yellow">QA Architect</span> with Jest/Vitest expertise. Write comprehensive tests for UserService including: <span className="text-noir-yellow">unit tests</span> with 90%+ coverage, <span className="text-noir-yellow">integration tests</span> with test containers, mock strategies for external APIs, <span className="text-noir-yellow">edge case handling</span> (null, undefined, race conditions), performance benchmarks. Follow AAA pattern, include CI integration."</span>
+                  )}
+                  {demoStep === 3 && (
+                    <span>"Act as a <span className="text-noir-yellow">Security Auditor</span> (OWASP-certified). Perform comprehensive API security review: <span className="text-noir-yellow">SQL injection</span> analysis, XSS vulnerabilities, <span className="text-noir-yellow">CSRF protection</span> audit, rate limiting assessment, <span className="text-noir-yellow">JWT implementation</span> review, CORS configuration check. Provide: severity ratings, exploit PoCs, remediation code, and compliance checklist (SOC2, GDPR)."</span>
+                  )}
+                  {demoStep === 4 && (
+                    <span>"Act as a <span className="text-noir-yellow">Solutions Architect</span> (AWS-certified). Design event-driven microservices: <span className="text-noir-yellow">domain boundaries</span> via DDD, async messaging with SQS/SNS, <span className="text-noir-yellow">saga pattern</span> for transactions, API gateway with rate limiting, <span className="text-noir-yellow">service mesh</span> (Istio). Include: C4 diagrams, failure modes, scaling strategies, cost projections for 10K/100K/1M users."</span>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={demoStep}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="font-mono text-sm text-black leading-relaxed"
-              >
-                {demoStep === 0 && '"Act as a senior React architect with expertise in Next.js 14, TypeScript, and modern authentication patterns. I need to build a production-grade admin dashboard with: role-based access control (RBAC), protected routes using middleware, JWT token refresh logic, secure session management, and responsive layouts. Include best practices for: component composition, state management (Context vs Zustand), error boundaries, loading states, and type-safe API calls. Provide a scalable folder structure and explain security considerations."'}
-                {demoStep === 1 && '"Act as a PostgreSQL database performance expert. I have a slow query joining 4 tables (users, orders, products, reviews) with 2M+ records. Current execution time: 8 seconds. Analyze this query and provide: 1) EXPLAIN ANALYZE output interpretation, 2) Missing index recommendations with CREATE INDEX statements, 3) Query rewrite using CTEs or window functions if beneficial, 4) Partitioning strategy for the orders table, 5) Caching opportunities. Focus on reducing execution time to under 500ms while maintaining data accuracy."'}
-                {demoStep === 2 && '"Act as a TypeScript expert and senior debugger. My Next.js 14 API route is throwing \'Type instantiation is excessively deep and possibly infinite\' errors. The API accepts a generic request body with nested objects 5 levels deep. Provide: 1) Root cause analysis of the type error, 2) Refactored type definitions using utility types (Pick, Omit, Partial), 3) Runtime validation strategy (Zod schema), 4) Unit tests to prevent regression, 5) Documentation of the type-safe API contract. Include before/after code snippets with explanations."'}
-              </motion.div>
-            </AnimatePresence>
           </div>
         </div>
-
-        {/* Demo Progress Indicator */}
-        <div className="flex justify-center gap-3 mt-8">
-          {[0, 1, 2].map((i) => (
-            <button
-              key={i}
-              onClick={() => setDemoStep(i)}
-              className={`w-3 h-3 rounded-full border-2 border-black transition-all ${
-                demoStep === i ? 'bg-neo-pink scale-125' : 'bg-white hover:bg-neo-yellow'
-              }`}
-            />
-          ))}
-        </div>
       </div>
 
-      {/* Bento Grid Section - Unique Features Showcase */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <h2 className={`text-4xl md:text-5xl font-black uppercase mb-4 tracking-tighter ${
-            isDark ? 'text-white' : 'text-black'
-          }`}>
-            Everything You <span className="text-neo-pink">Need</span>
-          </h2>
-          <p className={`text-xl font-mono font-bold ${
-            isDark ? 'text-neutral-400' : 'text-neutral-600'
-          }`}>Built for developers who care about quality</p>
-        </div>
+      {/* Principles Section - HOW WE WORK */}
+      <div id="features" className="py-32 bg-black">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          {/* Section Header */}
+          <div className="mb-20">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-noir-yellow">03 / Principles</span>
+            <h2 className="mt-4 font-display text-6xl md:text-8xl tracking-tight text-white uppercase">HOW WE WORK</h2>
+          </div>
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-fr">
-          {/* Large Feature - Spans 2 columns */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            className="md:col-span-2 md:row-span-2 bg-neo-blue border-3 border-black p-10 shadow-neo-lg hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-neo relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 text-9xl opacity-10">⚡</div>
-            <Zap className="w-12 h-12 mb-6" />
-            <h3 className="text-3xl font-black uppercase mb-4 tracking-tighter">Lightning Fast</h3>
-            <p className="font-mono font-bold text-lg mb-6 leading-relaxed">
-              Generate production-ready prompts in seconds. Our AI-powered engine optimizes for speed without compromising quality.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-auto">
-              <span className="px-4 py-2 bg-white border-2 border-black font-black text-sm uppercase rounded-neo">&lt; 2s Response</span>
-              <span className="px-4 py-2 bg-white border-2 border-black font-black text-sm uppercase rounded-neo">Real-time</span>
-            </div>
-          </motion.div>
-
-          {/* Security Badge */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            className="bg-neo-green border-3 border-black p-8 shadow-neo hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-neo"
-          >
-            <Shield className="w-10 h-10 mb-4" />
-            <h3 className="text-2xl font-black uppercase mb-3 tracking-tighter">OWASP Secure</h3>
-            <p className="font-mono font-bold text-sm leading-relaxed">
-              Built with security-first mindset. PII stripping included.
-            </p>
-          </motion.div>
-
-          {/* Code Icon */}
-          <motion.div
-            whileHover={{ y: -5, rotate: 5 }}
-            className="bg-neo-sunshine border-3 border-black p-8 shadow-neo hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-neo flex items-center justify-center"
-          >
-            <div className="text-center">
-              <Code className="w-16 h-16 mx-auto mb-4" />
-              <h3 className="text-xl font-black uppercase tracking-tighter">Dev-First</h3>
-            </div>
-          </motion.div>
-
-          {/* API Integration */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            className="md:col-span-2 bg-neo-pink border-3 border-black p-8 shadow-neo hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-neo"
-          >
-            <Terminal className="w-10 h-10 mb-4" />
-            <h3 className="text-2xl font-black uppercase mb-3 tracking-tighter">API Access</h3>
-            <p className="font-mono font-bold text-sm mb-4">
-              Integrate directly into your workflow. REST API with comprehensive docs.
-            </p>
-            <div className="bg-black text-neo-green p-4 rounded-neo font-mono text-xs border-2 border-black">
-              curl -X POST api.vibe/generate
-            </div>
-          </motion.div>
-
-          {/* Team Collaboration */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            className="bg-white border-3 border-black p-8 shadow-neo hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-neo"
-          >
-            <Users className="w-10 h-10 mb-4" />
-            <h3 className="text-2xl font-black uppercase mb-3 tracking-tighter">Team Ready</h3>
-            <p className="font-mono font-bold text-sm">
-              Share prompts across your team. Built for collaboration.
-            </p>
-          </motion.div>
-
-          {/* Database Icon */}
-          <motion.div
-            whileHover={{ y: -5, scale: 1.05 }}
-            className="bg-neo-yellow border-3 border-black p-8 shadow-neo hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-neo flex items-center justify-center"
-          >
-            <div className="text-center">
-              <Database className="w-16 h-16 mx-auto mb-4" />
-              <h3 className="text-xl font-black uppercase tracking-tighter">Saved History</h3>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Tech Stack Strip */}
-      <div className="max-w-7xl mx-auto px-6 py-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {[
-            {
-              icon: <Code className="w-10 h-10" />,
-              title: "Context-Aware",
-              desc: "Injects your tech stack automatically.",
-              color: "bg-neo-blue"
-            },
-            {
-              icon: <Shield className="w-10 h-10" />,
-              title: "Security First",
-              desc: "Built-in PII stripping and OWASP checks.",
-              color: "bg-neo-green"
-            },
-            {
-              icon: <Zap className="w-10 h-10" />,
-              title: "Model Tuned",
-              desc: "Optimized for GPT-4, Claude 3, and Gemini.",
-              color: "bg-neo-pink"
-            }
-          ].map((feature, i) => (
-            <motion.div 
-              key={i} 
-              whileHover={{ y: -8 }}
-              className={`${feature.color} border-3 border-black p-10 shadow-neo-lg hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-200 cursor-pointer`}
+          {/* Principles Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Principle 1 - Interface */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="border border-neutral-800 bg-neutral-900/30 p-10 backdrop-blur-sm transition-all duration-300 hover:border-noir-yellow/50 group"
             >
-              <div className="mb-8 p-4 bg-white border-3 border-black inline-block rounded-neo shadow-neo-sm">
-                {feature.icon}
-              </div>
-              <h3 className="text-3xl font-black uppercase mb-5 text-black tracking-tighter">{feature.title}</h3>
-              <p className="font-mono font-bold text-lg text-black">{feature.desc}</p>
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-500 block mb-8">01 / Interface</span>
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 leading-tight">
+                <HighlightText className="font-display uppercase">INTENT-BASED</HighlightText>
+                <span className="text-white font-display uppercase ml-2">COMPUTING</span>
+              </h3>
+              <p className="font-mono text-sm text-neutral-400 leading-relaxed">
+                We replaced rigid forms with high-fidelity prompt engineering. Our Vibe NLE parses abstract intent into technical constraints.
+              </p>
             </motion.div>
-          ))}
+
+            {/* Principle 2 - Architecture */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="border border-neutral-800 bg-neutral-900/30 p-10 backdrop-blur-sm transition-all duration-300 hover:border-noir-yellow/50 group"
+            >
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-500 block mb-8">02 / Architecture</span>
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 leading-tight">
+                <HighlightText className="font-display uppercase">DETERMINISTIC</HighlightText>
+                <span className="text-white font-display uppercase ml-2">PLANNING</span>
+              </h3>
+              <p className="font-mono text-sm text-neutral-400 leading-relaxed">
+                AI coding hallucinates; Vibe architects. We pre-compile strict Agile Frameworks enforcing SOLID principles and OWASP security.
+              </p>
+            </motion.div>
+
+            {/* Principle 3 - Fabrication */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="border border-neutral-800 bg-neutral-900/30 p-10 backdrop-blur-sm transition-all duration-300 hover:border-noir-yellow/50 group"
+            >
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-500 block mb-8">03 / Fabrication</span>
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 leading-tight">
+                <HighlightText className="font-display uppercase">AGENTIC</HighlightText>
+                <span className="text-white font-display uppercase ml-2">FABRICATION</span>
+              </h3>
+              <p className="font-mono text-sm text-neutral-400 leading-relaxed">
+                Specialized Builder Agents generate production-ready React & Rust code, automating the SDLC from branch to deployment.
+              </p>
+            </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="max-w-5xl mx-auto px-6 py-24 text-center">
-        <div className="bg-neo-black text-white p-16 border-3 border-black shadow-neo-xl relative overflow-hidden transform -rotate-1 hover:rotate-0 transition-transform duration-300">
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+      {/* CTA Section - Tech Noir */}
+      <div id="cta" className="max-w-5xl mx-auto px-6 py-24 text-center">
+        <div className="bg-noir-gray/50 border border-noir-yellow/30 p-16 relative overflow-hidden backdrop-blur-sm group hover:border-noir-yellow/50 transition-all duration-500">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-noir-yellow/0 via-noir-yellow/5 to-noir-yellow/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative z-10">
-            <h2 className="text-5xl md:text-7xl font-black uppercase mb-8 tracking-tighter">
-              Ready to Vibe?
+            <h2 className="text-4xl md:text-6xl font-display font-bold uppercase mb-8 tracking-wide text-white">
+              Ready to <span className="text-noir-yellow text-glow">Vibe</span>?
             </h2>
-            <p className="text-2xl font-mono font-bold mb-12 text-neo-yellow">
-              Join {statsCounter.users.toLocaleString()}+ developers generating better code.
+            <p className="text-xl font-sans mb-12 text-neutral-400">
+              Join <span className="text-noir-yellow font-display">{statsCounter.users.toLocaleString()}+</span> developers generating better code.
             </p>
             <button 
               onClick={() => navigate('/signup')}
-              className="bg-neo-pink text-white text-xl px-12 py-5 font-black uppercase border-3 border-white hover:bg-neo-green hover:text-black transition-all transform hover:rotate-2 shadow-neo-sm hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] duration-150"
+              className="bg-noir-yellow text-noir-black text-lg px-10 py-4 font-display font-bold uppercase tracking-wider hover:shadow-glow-yellow-lg transition-all duration-300"
             >
               Initialize System →
             </button>
@@ -443,27 +397,30 @@ export default function HeroV3() {
         </div>
       </div>
 
-      {/* Stats Footer Section */}
+      {/* Stats Footer Section - Tech Noir */}
       <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { 
-              icon: <Zap className="w-8 h-8" />,
+              icon: <Zap className="w-6 h-6" />,
               value: statsCounter.prompts.toLocaleString() + '+',
               label: 'Prompts Generated',
-              color: 'bg-neo-pink'
+              borderColor: 'border-noir-yellow/30',
+              iconColor: 'text-noir-yellow'
             },
             { 
-              icon: <Users className="w-8 h-8" />,
+              icon: <Users className="w-6 h-6" />,
               value: statsCounter.users.toLocaleString() + '+',
               label: 'Active Users',
-              color: 'bg-neo-blue'
+              borderColor: 'border-blue-500/30',
+              iconColor: 'text-blue-400'
             },
             { 
-              icon: <TrendingUp className="w-8 h-8" />,
+              icon: <TrendingUp className="w-6 h-6" />,
               value: statsCounter.satisfaction + '%',
               label: 'Satisfaction Rate',
-              color: 'bg-neo-green'
+              borderColor: 'border-green-500/30',
+              iconColor: 'text-green-400'
             },
           ].map((stat, i) => (
             <motion.div
@@ -471,13 +428,13 @@ export default function HeroV3() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 + 0.5 }}
-              className={`${stat.color} border-3 border-black p-8 shadow-neo text-center rounded-neo`}
+              className={`${stat.borderColor} border bg-noir-gray/30 p-8 text-center backdrop-blur-sm`}
             >
-              <div className="flex justify-center mb-4">{stat.icon}</div>
-              <div className="text-5xl font-black uppercase mb-2 tracking-tighter">
+              <div className={`flex justify-center mb-4 ${stat.iconColor}`}>{stat.icon}</div>
+              <div className="text-4xl font-display font-bold uppercase mb-2 tracking-wide text-white">
                 {stat.value}
               </div>
-              <div className="font-mono font-bold text-sm uppercase tracking-wider">
+              <div className="font-sans text-sm uppercase tracking-wider text-neutral-500">
                 {stat.label}
               </div>
             </motion.div>
@@ -485,8 +442,96 @@ export default function HeroV3() {
         </div>
       </div>
 
-      {/* Footer Component */}
-      <Footer />
+      {/* Credits Section */}
+      <div className="py-32 border-t border-neutral-800">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          {/* Section Header */}
+          <div className="mb-16">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-noir-yellow">04 / Colophon</span>
+            <h2 className="mt-4 font-display text-6xl md:text-8xl tracking-tight text-white uppercase">CREDITS</h2>
+          </div>
+
+          {/* Credits Grid - Row 1 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-l border-neutral-800">
+            {/* Design */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Design</span>
+              <p className="font-mono text-sm text-neutral-300">Vibe Prompting</p>
+              <p className="font-mono text-sm text-neutral-300">Studio</p>
+            </div>
+
+            {/* Stack */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Stack</span>
+              <p className="font-mono text-sm text-neutral-300">React + Vite</p>
+              <p className="font-mono text-sm text-neutral-300">Tailwind CSS</p>
+              <p className="font-mono text-sm text-neutral-300">Supabase</p>
+            </div>
+
+            {/* Typography */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Typography</span>
+              <p className="font-mono text-sm text-neutral-300">Orbitron</p>
+              <p className="font-mono text-sm text-neutral-300">Inter</p>
+              <p className="font-mono text-sm text-neutral-300">JetBrains Mono</p>
+            </div>
+
+            {/* Location */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Location</span>
+              <p className="font-mono text-sm text-neutral-300">Remote</p>
+              <p className="font-mono text-sm text-neutral-300">Everywhere</p>
+            </div>
+          </div>
+
+          {/* Credits Grid - Row 2 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 border-l border-neutral-800 mb-16">
+            {/* Contact */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Contact</span>
+              <a href="mailto:#" className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block">Email</a>
+              <a href="#" target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block">Twitter/X</a>
+              <a href="#" target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block">LinkedIn</a>
+              <a href="#" target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block">GitHub</a>
+            </div>
+
+            {/* Year */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Year</span>
+              <p className="font-mono text-sm text-neutral-300">2025</p>
+              <p className="font-mono text-sm text-neutral-300">Ongoing</p>
+            </div>
+
+            {/* Product */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Product</span>
+              <button onClick={() => navigate('/generate')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">Generate</button>
+              <button onClick={() => navigate('/explore')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">Explore</button>
+              <button onClick={() => navigate('/pricing')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">Pricing</button>
+              <button onClick={() => navigate('/dashboard')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">Dashboard</button>
+            </div>
+
+            {/* Resources */}
+            <div className="border-r border-b border-neutral-800 p-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-600 block mb-6">Resources</span>
+              <button onClick={() => navigate('/docs')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">Docs</button>
+              <button onClick={() => navigate('/docs')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">API</button>
+              <button onClick={() => navigate('/docs')} className="font-mono text-sm text-neutral-300 hover:text-noir-yellow transition-colors block text-left">Examples</button>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="font-mono text-xs text-neutral-500">
+              © {new Date().getFullYear()} VibePrompting. All rights reserved.
+            </p>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-noir-yellow/30 to-transparent mx-8 hidden md:block"></div>
+            <p className="font-mono text-xs text-neutral-500">
+              Built for developers, by developers.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

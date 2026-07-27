@@ -143,26 +143,18 @@ export default function TestimonialsPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm mb-6"
-            style={{
-              background: theme === 'dark' ? 'rgba(147, 51, 234, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-              borderColor: theme === 'dark' ? 'rgba(147, 51, 234, 0.3)' : 'rgba(99, 102, 241, 0.3)'
-            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm mb-6 bg-[#FFD700]/10 border-[#FFD700]/30"
           >
-            <Star className={`w-4 h-4 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
-            <span className={`text-sm font-medium ${theme === 'dark' ? 'text-purple-300' : 'text-purple-700'}`}>
+            <Star className="w-4 h-4 text-[#FFD700]" />
+            <span className="text-sm font-medium text-[#FFD700] font-mono uppercase tracking-wider">
               Testimonials
             </span>
           </motion.div>
 
-          <h1 className={`text-4xl md:text-6xl font-bold mb-4 ${
-            theme === 'dark' ? 'text-white' : 'text-neutral-900'
-          }`}>
-            What our users say
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white font-mono uppercase tracking-tight">
+            What our <span className="text-[#FFD700]">users say</span>
           </h1>
-          <p className={`text-lg md:text-xl max-w-2xl mx-auto ${
-            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-          }`}>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto text-[#A1A1AA]">
             See what our customers have to say about us.
           </p>
         </motion.div>
@@ -181,11 +173,7 @@ export default function TestimonialsPage() {
                   key={testimonial.id}
                   variants={itemVariants}
                   whileHover={{ y: -5, scale: 1.02 }}
-                  className={`relative rounded-2xl p-6 border backdrop-blur-sm transition-all duration-300 ${
-                    theme === 'dark'
-                      ? 'bg-neutral-900/50 border-neutral-800 hover:border-neutral-700 hover:shadow-xl hover:shadow-purple-500/10'
-                      : 'bg-white border-neutral-200 hover:border-neutral-300 hover:shadow-xl'
-                  }`}
+                  className="relative rounded-2xl p-6 border backdrop-blur-sm transition-all duration-300 bg-[#1A1A1A] border-[#333333] hover:border-[#FFD700]/40 hover:shadow-xl hover:shadow-[#FFD700]/10"
                 >
                   {/* Quote Icon */}
                   <div className="absolute top-4 right-4 opacity-10">
@@ -203,9 +191,7 @@ export default function TestimonialsPage() {
                   </div>
 
                   {/* Content */}
-                  <p className={`text-sm leading-relaxed mb-6 ${
-                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                  }`}>
+                  <p className="text-sm leading-relaxed mb-6 text-[#A1A1AA]">
                     {testimonial.content}
                   </p>
 
@@ -217,14 +203,10 @@ export default function TestimonialsPage() {
                       className="w-12 h-12 rounded-full object-cover border-2 border-purple-500/20"
                     />
                     <div>
-                      <h4 className={`font-semibold text-sm ${
-                        theme === 'dark' ? 'text-white' : 'text-neutral-900'
-                      }`}>
+                      <h4 className="font-semibold text-sm text-white">
                         {testimonial.name}
                       </h4>
-                      <p className={`text-xs ${
-                        theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-                      }`}>
+                      <p className="text-xs text-[#555]">
                         {testimonial.role}
                         {testimonial.company && (
                           <span className="ml-1">• {testimonial.company}</span>
@@ -246,20 +228,12 @@ export default function TestimonialsPage() {
           className="mt-16 text-center"
         >
           <motion.div
-            className={`max-w-2xl mx-auto p-8 rounded-3xl border backdrop-blur-sm ${
-              theme === 'dark'
-                ? 'bg-gradient-to-r from-purple-900/20 to-pink-900/20 border-purple-500/30'
-                : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
-            }`}
+            className="max-w-2xl mx-auto p-8 rounded-3xl border backdrop-blur-sm bg-gradient-to-r from-[#A855F7]/20 to-[#ec4899]/20 border-[#A855F7]/30"
           >
-            <h3 className={`text-2xl md:text-3xl font-bold mb-3 ${
-              theme === 'dark' ? 'text-white' : 'text-neutral-900'
-            }`}>
-              Ready to transform your workflow?
+            <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white font-mono uppercase">
+              Ready to transform your <span className="text-[#A855F7]">workflow?</span>
             </h3>
-            <p className={`mb-6 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}>
+            <p className="mb-6 text-[#A1A1AA]">
               Join thousands of satisfied users and start creating amazing prompts today!
             </p>
             <motion.button

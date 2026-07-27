@@ -13,6 +13,9 @@ import ExplorePage from '@/pages/ExplorePage'
 import DocsPage from '@/pages/DocsPage'
 import PricingPage from '@/pages/PricingPage'
 import DashboardPage from '@/pages/DashboardPage'
+import TestimonialsPage from '@/pages/TestimonialsPage'
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage'
+import SettingsPage from '@/pages/SettingsPage'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
@@ -25,10 +28,10 @@ function HomePage() {
 // Loading component for auth initialization
 function AuthLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neo-bg">
+    <div className="min-h-screen flex items-center justify-center bg-noir-black">
       <div className="text-center">
-        <Loader2 className="w-12 h-12 animate-spin text-neo-pink mx-auto mb-4" />
-        <p className="font-mono font-bold text-neutral-600">Loading...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-noir-yellow mx-auto mb-4" />
+        <p className="font-display uppercase tracking-wider text-neutral-500">Initializing...</p>
       </div>
     </div>
   )
@@ -60,23 +63,23 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className={`min-h-screen w-full font-sans ${
-        theme === 'dark' 
-          ? 'bg-neutral-950 text-white selection:bg-neo-pink selection:text-white' 
-          : 'bg-neo-bg text-black selection:bg-neo-yellow selection:text-black'
-      }`}>
-        <Tiles className="fixed inset-0 -z-10" />
+      <div className="min-h-screen w-full font-sans bg-noir-black text-white selection:bg-noir-yellow selection:text-noir-black">
+        {/* Tech Noir Grid Background */}
+        <div className="fixed inset-0 -z-10 noir-grid-bg opacity-30" />
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/generate" element={<ProtectedRoute><GeneratePromptPage /></ProtectedRoute>} />
           <Route path="/prompts" element={<ProtectedRoute><MyPromptsPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/docs" element={<DocsPage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/testimonials" element={<TestimonialsPage />} />
         </Routes>
         <Analytics />
       </div>

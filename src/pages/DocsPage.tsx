@@ -182,80 +182,142 @@ Visit \`http://localhost:5173\`
 # 🛡️ Security Implementation
 
 ## Overview
-Comprehensive security measures implemented at all layers.
+Vibe Prompting implements defense-in-depth security across all layers — client, transport, server, and database.
+
+## Authentication Security
+
+### CSRF Protection
+- **Token Generation:** Cryptographic CSRF tokens generated on form mount
+- **Token Validation:** Verified before every login/signup submission
+- **Token Refresh:** Auto-refreshed after successful authentication
+- **Implementation:** \`csrfToken.generateToken()\` and \`csrfToken.validateToken()\`
+
+### Session Management
+- **Session Monitoring:** Automatic session timeout detection via \`sessionManager\`
+- **Inactivity Timeout:** Sessions expire after prolonged inactivity
+- **Auth State Listener:** Real-time Supabase \`onAuthStateChange\` tracking
+- **Secure Logout:** Clears session + stops monitoring + redirects
+
+### OAuth Security
+- **Providers:** Google and GitHub OAuth via Supabase
+- **Redirect URL:** Scoped to \`window.location.origin\`
+- **Profile Sync:** Auto-upsert profile on OAuth login
+- **No Token Exposure:** OAuth tokens managed server-side by Supabase
 
 ## Input Validation
 
-### Zod Schemas
+### Zod Schema Validation
 \`\`\`typescript
-// Email & Password
 loginSchema = {
   email: 1-50 characters, valid email format
   password: 8-25 characters
 }
 
-// Signup
 signupSchema = {
   username: 3-20 characters, alphanumeric + underscore
   email: 1-50 characters, valid format
   password: 8-25 characters, strength check
+  confirmPassword: must match password
+}
+
+promptSchema = {
+  title: max 100 characters
+  content: max 5000 characters
+  tags: max 5 items, 20 chars each
 }
 \`\`\`
 
-## XSS Prevention
-- Input sanitization before database operations
-- HTML/script tag detection and removal
-- Special character escaping
+### Sanitization Pipeline
+- \`sanitizeInput()\` — Strips HTML/script tags, escapes special characters
+- \`isValidEmail()\` — Format validation before Supabase call
+- \`isValidUsername()\` — Alphanumeric + underscore pattern enforcement
+- SQL keyword detection and rejection
 
-## SQL Injection Protection
-- Parameterized queries via Supabase
-- Input pattern validation
-- SQL keyword detection
+## XSS Prevention
+- All user inputs sanitized before database writes
+- HTML tag detection and automatic removal
+- Script injection pattern matching
+- Content-Security-Policy headers in production
+- React's built-in JSX escaping for rendered output
 
 ## Rate Limiting
-- Login: 5 attempts per minute
-- Signup: 3 attempts per minute
-- Client-side enforcement
+
+### Client-Side Enforcement
+\`\`\`text
+Login:  5 attempts per 60 seconds (per email)
+Signup: 3 attempts per 60 seconds (per email)
+API:    Server-side rate limiting via Supabase Edge Functions
+\`\`\`
+
+### Server-Side Protection
+- Supabase Edge Functions enforce API rate limits
+- \`check_rate_limit()\` RPC for server-validated throttling
+- Idempotency keys prevent duplicate prompt generations
+- Credit consumption uses \`FOR UPDATE\` row locking
 
 ## Password Security
-- Minimum 8 characters
-- Strength scoring (0-4)
-- Real-time feedback
-- Visual strength indicator
+- Minimum 8 characters, maximum 25 characters
+- Real-time strength scoring (0-4 scale)
+- Visual strength indicator with color feedback
+- Requirements checklist: length, uppercase, number, symbol
+- Passwords hashed via bcrypt (Supabase-managed)
+- Show/hide toggle with accessible labeling
+
+## Bot Detection
+- **Honeypot Fields:** Hidden form fields on signup — if filled, submission rejected
+- **CSRF Tokens:** Prevents automated cross-site form submissions
+- **Rate Limiting:** Blocks brute-force bot attempts
 
 ## Database Security
 
 ### Row Level Security (RLS)
 \`\`\`sql
--- Profiles: Users can only edit their own
--- Prompts: Users see public OR their own
+-- Profiles: Users can only read/edit their own profile
+-- Prompts: Users see public prompts OR their own private ones
+-- INSERT: Only authenticated users
+-- UPDATE/DELETE: Only the content owner
 \`\`\`
 
-### Policies
-- SELECT: Public prompts OR user's own
-- INSERT: Authenticated users only
-- UPDATE/DELETE: Own content only
+### Atomic Credit Operations
+- \`consume_user_credits()\` uses \`FOR UPDATE\` row locking
+- Prevents race conditions on concurrent credit deductions
+- Atomic transaction: deduct + generate in single operation
+- \`get_user_credits()\` is read-only — no client mutations
 
-## Character Limits
-- Email: 50 characters
-- Password: 25 characters
-- Username: 20 characters
-- Prompt Title: 100 characters
-- Prompt Content: 5000 characters
-- Tags: 20 characters each, max 5
+### API Key Security
+- Gemini API key stored as Supabase Edge Function secret
+- Service role key never exposed to browser
+- \`VITE_SUPABASE_ANON_KEY\` is safe for client (RLS enforced)
+- No sensitive keys in client bundle
 
-## Unique Username Generation
-- Base username + 4-char UUID prefix
-- Prevents duplicates
-- Format: \`username_abcd\`
+## Build Security
+\`\`\`typescript
+// vite.config.ts production settings
+sourcemap: false      // No source maps in production
+drop_console: true    // Remove console.log statements
+drop_debugger: true   // Remove debugger statements
+// Code splitting for vendor isolation
+\`\`\`
 
-## Best Practices
-✅ Never store sensitive data in localStorage
-✅ Use HTTPS in production
-✅ Enable email verification in Supabase
-✅ Add reCAPTCHA for signup/login
-✅ Implement server-side rate limiting
-✅ Regular security audits
+## Character Limits (DoS Prevention)
+- Email: 50 characters max
+- Password: 25 characters max
+- Username: 20 characters max
+- Prompt Title: 100 characters max
+- Prompt Content: 5,000 characters max
+- Tags: 20 characters each, 5 tags maximum
+
+## Security Best Practices
+✅ CSRF token on all auth forms
+✅ Honeypot bot detection on signup
+✅ Session timeout monitoring
+✅ Input sanitization at every entry point
+✅ RLS on every database table
+✅ No sensitive data in localStorage
+✅ HTTPS enforced in production
+✅ Source maps disabled in builds
+✅ Rate limiting on auth endpoints
+✅ Atomic credit operations with row locking
     `
   },
   {
@@ -876,11 +938,7 @@ export default function DocsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-          className={`lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full border-2 ${
-            theme === 'dark'
-              ? 'bg-purple-600 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
-              : 'bg-purple-600 border-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-          }`}
+          className="lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full border-2 bg-[#FFD700] border-[#000] text-[#0A0A0A] shadow-[4px_4px_0px_0px_#000]"
         >
           {showMobileSidebar ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </motion.button>
@@ -893,11 +951,7 @@ export default function DocsPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={scrollToTop}
-              className={`fixed bottom-6 left-6 z-50 p-3 rounded-full transition-colors border-2 ${
-                theme === 'dark'
-                  ? 'bg-neutral-800 border-white text-white hover:bg-neutral-700 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
-                  : 'bg-white border-black text-neutral-900 hover:bg-neutral-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-              }`}
+              className="fixed bottom-6 left-6 z-50 p-3 rounded-full transition-colors border-2 bg-[#1A1A1A] border-[#333333] text-white hover:bg-[#333333] shadow-[4px_4px_0px_0px_#000]"
             >
               <ArrowUp className="w-5 h-5" />
             </motion.button>
@@ -911,20 +965,14 @@ export default function DocsPage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className={`p-3 rounded-xl border-2 ${
-              theme === 'dark' ? 'bg-neutral-800 border-white' : 'bg-white border-black'
-            }`}>
-              <Book className="w-8 h-8 text-purple-500" />
+            <div className="p-3 rounded-xl border-2 bg-[#1A1A1A] border-[#333333]">
+              <Book className="w-8 h-8 text-[#FFD700]" />
             </div>
             <div>
-              <h1 className={`text-4xl md:text-5xl font-black ${
-                theme === 'dark' ? 'text-white' : 'text-neutral-900'
-              }`}>
+              <h1 className="text-4xl md:text-5xl font-black text-white font-mono uppercase tracking-tight">
                 Documentation
               </h1>
-              <p className={`text-base md:text-lg mt-1 font-medium ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}>
+              <p className="text-base md:text-lg mt-1 font-medium text-[#A1A1AA]">
                 Complete guide to Vibe Prompting
               </p>
             </div>
@@ -932,19 +980,13 @@ export default function DocsPage() {
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-            }`} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A1A1AA]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search documentation..."
-              className={`w-full pl-12 pr-6 py-4 rounded-xl border-2 outline-none transition-all font-medium ${
-                theme === 'dark'
-                  ? 'bg-neutral-900 border-white text-white placeholder:text-neutral-500 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] focus:translate-y-[-2px] focus:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)]'
-                  : 'bg-white border-black text-neutral-900 placeholder:text-neutral-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-y-[-2px] focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
-              }`}
+              className="w-full pl-12 pr-6 py-4 rounded-xl border-2 outline-none transition-all font-medium bg-[#1A1A1A] border-[#333333] text-white placeholder:text-[#555] shadow-[4px_4px_0px_0px_#000] focus:translate-y-[-2px] focus:shadow-[6px_6px_0px_0px_#000] focus:border-[#FFD700]"
             />
           </div>
         </motion.div>
@@ -973,15 +1015,9 @@ export default function DocsPage() {
                 )}
 
                 <div className={`relative ${showMobileSidebar ? 'w-80 h-full overflow-y-auto' : ''} lg:sticky lg:top-24`}>
-                  <div className={`rounded-xl p-6 border-2 h-full lg:h-auto ${
-                    theme === 'dark'
-                      ? 'bg-neutral-900 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]'
-                      : 'bg-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                  }`}>
+                  <div className={`rounded-xl p-6 border-2 h-full lg:h-auto bg-[#1A1A1A] border-[#333333] shadow-[4px_4px_0px_0px_#000]`}>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className={`text-sm font-black tracking-wide ${
-                        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                      }`}>
+                      <h3 className="text-sm font-black tracking-wide text-[#A1A1AA] font-mono">
                         CONTENTS
                       </h3>
                       {showMobileSidebar && (
@@ -1006,12 +1042,8 @@ export default function DocsPage() {
                             onClick={() => handleSectionChange(section)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left group border-2 ${
                               isActive
-                                ? theme === 'dark'
-                                  ? 'bg-purple-600 border-white text-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]'
-                                  : 'bg-purple-600 border-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                                : theme === 'dark'
-                                  ? 'border-transparent text-neutral-400 hover:text-white hover:bg-neutral-800'
-                                  : 'border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                                ? 'bg-[#FFD700] border-[#000] text-[#0A0A0A] shadow-[2px_2px_0px_0px_#000]'
+                                : 'border-transparent text-[#A1A1AA] hover:text-white hover:bg-[#0A0A0A]'
                             }`}
                           >
                             <Icon className={`w-4 h-4 flex-shrink-0 ${
@@ -1040,50 +1072,34 @@ export default function DocsPage() {
                 transition={{ duration: 0.3 }}
               >
                 {/* Breadcrumb */}
-                <div className={`flex items-center gap-2 mb-6 text-sm ${
-                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                }`}>
+                <div className="flex items-center gap-2 mb-6 text-sm text-[#555]">
                   <Home className="w-4 h-4" />
                   <ChevronRight className="w-4 h-4" />
-                  <span className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}>
+                  <span className="text-[#FFD700]">
                     {selectedSection.title}
                   </span>
                 </div>
 
                 {/* Content Card */}
-                <div className={`rounded-xl border-2 ${
-                  theme === 'dark'
-                    ? 'bg-neutral-900 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]'
-                    : 'bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
-                }`}>
+                <div className="rounded-xl border-2 bg-[#1A1A1A] border-[#333333] shadow-[8px_8px_0px_0px_#000]">
                   {/* Header */}
-                  <div className={`p-6 md:p-8 border-b-2 ${
-                    theme === 'dark' ? 'border-white' : 'border-black'
-                  }`}>
+                  <div className="p-6 md:p-8 border-b-2 border-[#333333]">
                     <div className="flex items-start gap-4">
                       {(() => {
                         const Icon = selectedSection.icon
                         return (
-                          <div className={`p-3 rounded-xl border-2 ${
-                            theme === 'dark' ? 'bg-neutral-800 border-white' : 'bg-white border-black'
-                          }`}>
-                            <Icon className="w-6 h-6 text-purple-500" />
+                          <div className="p-3 rounded-xl border-2 bg-[#0A0A0A] border-[#333333]">
+                            <Icon className="w-6 h-6 text-[#FFD700]" />
                           </div>
                         )
                       })()}
                       <div className="flex-1">
-                        <h2 className={`text-2xl md:text-3xl font-black mb-2 ${
-                          theme === 'dark' ? 'text-white' : 'text-neutral-900'
-                        }`}>
+                        <h2 className="text-2xl md:text-3xl font-black mb-2 text-white font-mono uppercase">
                           {selectedSection.title}
                         </h2>
                         <div className="flex items-center gap-2">
-                          <FileText className={`w-4 h-4 ${
-                            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                          }`} />
-                          <span className={`text-sm font-medium ${
-                            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                          }`}>
+                          <FileText className="w-4 h-4 text-[#555]" />
+                          <span className="text-sm font-medium text-[#555]">
                             Source: {selectedSection.file}
                           </span>
                         </div>
@@ -1092,12 +1108,8 @@ export default function DocsPage() {
 
                     {/* Table of Contents */}
                     {tableOfContents.length > 0 && (
-                      <div className={`mt-6 pt-6 border-t-2 ${
-                        theme === 'dark' ? 'border-neutral-800' : 'border-neutral-200'
-                      }`}>
-                        <h3 className={`text-sm font-bold mb-3 ${
-                          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                        }`}>
+                      <div className="mt-6 pt-6 border-t-2 border-[#333333]">
+                        <h3 className="text-sm font-bold mb-3 text-[#A1A1AA] font-mono uppercase">
                           ON THIS PAGE
                         </h3>
                         <ul className="space-y-2">
@@ -1108,11 +1120,7 @@ export default function DocsPage() {
                             >
                               <a
                                 href={`#${heading.id}`}
-                                className={`text-sm font-medium hover:underline transition-colors ${
-                                  theme === 'dark'
-                                    ? 'text-neutral-400 hover:text-purple-400'
-                                    : 'text-neutral-600 hover:text-purple-600'
-                                }`}
+                                className="text-sm font-medium hover:underline transition-colors text-[#A1A1AA] hover:text-[#FFD700]"
                               >
                                 {heading.text}
                               </a>
@@ -1126,7 +1134,7 @@ export default function DocsPage() {
                   {/* Content */}
                   <div className="p-6 md:p-8">
                     <div 
-                      className={theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'}
+                      className="text-[#A1A1AA]"
                       style={{ 
                         fontSize: '16px',
                         lineHeight: '1.8',
@@ -1138,36 +1146,36 @@ export default function DocsPage() {
                           .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
                             const language = lang || 'text'
                             return `
-                              <div style="margin: 24px 0; border-radius: 12px; overflow: hidden; border: 2px solid ${theme === 'dark' ? '#fff' : '#000'}; background: ${theme === 'dark' ? '#1a1a1a' : '#fafafa'}; box-shadow: 4px 4px 0px 0px ${theme === 'dark' ? '#fff' : '#000'};">
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: ${theme === 'dark' ? '#262626' : '#f0f0f0'}; border-bottom: 2px solid ${theme === 'dark' ? '#fff' : '#000'};">
+                              <div style="margin: 24px 0; border-radius: 12px; overflow: hidden; border: 2px solid #333; background: #1a1a1a; box-shadow: 4px 4px 0px 0px #000;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: #0a0a0a; border-bottom: 2px solid #333;">
                                   <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="display: flex; gap: 6px;">
                                       <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f56; border: 1px solid #000;"></div>
                                       <div style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e; border: 1px solid #000;"></div>
                                       <div style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f; border: 1px solid #000;"></div>
                                     </div>
-                                    <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; font-weight: bold; color: ${theme === 'dark' ? '#999' : '#666'};">${language}</span>
+                                    <span style="font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; font-weight: bold; color: #FFD700;">${language}</span>
                                   </div>
                                 </div>
-                                <pre style="margin: 0; padding: 16px; overflow-x: auto;"><code style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; color: ${theme === 'dark' ? '#e0e0e0' : '#333'};">${code.trim()}</code></pre>
+                                <pre style="margin: 0; padding: 16px; overflow-x: auto;"><code style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; color: #e0e0e0;">${code.trim()}</code></pre>
                               </div>
                             `
                           })
                           // Inline code
-                          .replace(/`([^`]+)`/g, `<code style="background: ${theme === 'dark' ? '#2d1b69' : '#f3f0ff'}; color: ${theme === 'dark' ? '#c4b5fd' : '#7c3aed'}; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 14px; border: 1px solid ${theme === 'dark' ? '#4c1d95' : '#ddd6fe'}; font-weight: bold;">\$1</code>`)
+                          .replace(/`([^`]+)`/g, `<code style="background: #2d1b69; color: #c4b5fd; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 14px; border: 1px solid #4c1d95; font-weight: bold;">\$1</code>`)
                           // Headings
-                          .replace(/^### (.+)$/gm, `<h3 style="font-size: 20px; font-weight: 800; margin-top: 48px; margin-bottom: 16px; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h3>`)
-                          .replace(/^## (.+)$/gm, `<h2 style="font-size: 24px; font-weight: 900; margin-top: 56px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid ${theme === 'dark' ? '#404040' : '#e5e5e5'}; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h2>`)
-                          .replace(/^# (.+)$/gm, `<h1 style="font-size: 32px; font-weight: 900; margin-bottom: 32px; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</h1>`)
+                          .replace(/^### (.+)$/gm, `<h3 style="font-size: 20px; font-weight: 800; margin-top: 48px; margin-bottom: 16px; color: #fff;">\$1</h3>`)
+                          .replace(/^## (.+)$/gm, `<h2 style="font-size: 24px; font-weight: 900; margin-top: 56px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #404040; color: #fff;">\$1</h2>`)
+                          .replace(/^# (.+)$/gm, `<h1 style="font-size: 32px; font-weight: 900; margin-bottom: 32px; color: #fff;">\$1</h1>`)
                           // Bold
-                          .replace(/\*\*(.+?)\*\*/g, `<strong style="font-weight: 800; color: ${theme === 'dark' ? '#fff' : '#171717'};">\$1</strong>`)
+                          .replace(/\*\*(.+?)\*\*/g, `<strong style="font-weight: 800; color: #fff;">\$1</strong>`)
                           // Lists
                           .replace(/^- (.+)$/gm, `<li style="margin: 8px 0; margin-left: 24px; line-height: 1.8; font-weight: 500;">\$1</li>`)
                           // Checkboxes
                           .replace(/- \[ \] (.+)/g, `<div style="display: flex; gap: 12px; margin: 8px 0;"><input type="checkbox" disabled style="margin-top: 4px; border: 2px solid #000;" /><span>\$1</span></div>`)
                           .replace(/- \[x\] (.+)/g, `<div style="display: flex; gap: 12px; margin: 8px 0;"><input type="checkbox" checked disabled style="margin-top: 4px; border: 2px solid #000;" /><span style="text-decoration: line-through; opacity: 0.6;">\$1</span></div>`)
                           // Horizontal rule
-                          .replace(/^---$/gm, `<hr style="margin: 48px 0; border: none; height: 2px; background: ${theme === 'dark' ? '#404040' : '#e5e5e5'};" />`)
+                          .replace(/^---$/gm, `<hr style="margin: 48px 0; border: none; height: 2px; background: #404040;" />`)
                           // Paragraphs - add spacing
                           .replace(/\n\n/g, '<br/><br/>')
                           .replace(/\n/g, '<br/>')
@@ -1176,24 +1184,16 @@ export default function DocsPage() {
                   </div>
 
                   {/* Footer with Prev/Next */}
-                  <div className={`p-6 md:p-8 border-t-2 ${
-                    theme === 'dark' ? 'border-white' : 'border-black'
-                  }`}>
+                  <div className="p-6 md:p-8 border-t-2 border-[#333333]">
                     {/* Metadata */}
-                    <div className={`flex flex-wrap items-center gap-4 mb-6 pb-6 border-b-2 text-sm ${
-                      theme === 'dark' ? 'border-neutral-800 text-neutral-500' : 'border-neutral-200 text-neutral-400'
-                    }`}>
+                    <div className="flex flex-wrap items-center gap-4 mb-6 pb-6 border-b-2 text-sm border-[#333333] text-[#555]">
                       <span>Last updated: {new Date().toLocaleDateString()}</span>
                       <span>•</span>
                       <a
                         href={`https://github.com/yourusername/vibe-prompting/blob/main/${selectedSection.file}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`flex items-center gap-1 font-bold transition-colors ${
-                          theme === 'dark'
-                            ? 'text-purple-400 hover:text-purple-300'
-                            : 'text-purple-600 hover:text-purple-700'
-                        }`}
+                        className="flex items-center gap-1 font-bold transition-colors text-[#A855F7] hover:text-[#c084fc]"
                       >
                         Edit on GitHub
                         <ExternalLink className="w-3 h-3" />
@@ -1208,21 +1208,13 @@ export default function DocsPage() {
                           whileHover={{ scale: 1.02, y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => handleSectionChange(previousSection)}
-                          className={`p-4 rounded-xl border-2 transition-all text-left ${
-                            theme === 'dark'
-                              ? 'bg-neutral-800 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                              : 'bg-white border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
-                          }`}
+                          className="p-4 rounded-xl border-2 transition-all text-left bg-[#1A1A1A] border-[#333333] text-white shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-y-0 hover:border-[#FFD700]"
                         >
-                          <div className={`flex items-center gap-2 text-sm mb-1 font-bold ${
-                            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-                          }`}>
+                          <div className="flex items-center gap-2 text-sm mb-1 font-bold text-[#555]">
                             <ChevronLeft className="w-4 h-4" />
                             <span>Previous</span>
                           </div>
-                          <div className={`font-black ${
-                            theme === 'dark' ? 'text-white' : 'text-neutral-900'
-                          }`}>
+                          <div className="font-black text-white">
                             {previousSection.title}
                           </div>
                         </motion.button>
@@ -1236,21 +1228,13 @@ export default function DocsPage() {
                           whileHover={{ scale: 1.02, y: -2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => handleSectionChange(nextSection)}
-                          className={`p-4 rounded-xl border-2 transition-all text-right ${
-                            theme === 'dark'
-                              ? 'bg-neutral-800 border-white text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-y-0'
-                              : 'bg-white border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-0'
-                          }`}
+                          className="p-4 rounded-xl border-2 transition-all text-right bg-[#1A1A1A] border-[#333333] text-white shadow-[4px_4px_0px_0px_#000] hover:shadow-none hover:translate-y-0 hover:border-[#FFD700]"
                         >
-                          <div className={`flex items-center justify-end gap-2 text-sm mb-1 font-bold ${
-                            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-                          }`}>
+                          <div className="flex items-center justify-end gap-2 text-sm mb-1 font-bold text-[#555]">
                             <span>Next</span>
                             <ChevronRight className="w-4 h-4" />
                           </div>
-                          <div className={`font-black ${
-                            theme === 'dark' ? 'text-white' : 'text-neutral-900'
-                          }`}>
+                          <div className="font-black text-white">
                             {nextSection.title}
                           </div>
                         </motion.button>

@@ -9,6 +9,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Tech Noir Palette - Exact Wireframe Colors
+        'noir-black': '#0A0A0A',        // Primary background
+        'noir-dark': '#1A1A1A',         // Secondary background (cards, inputs)
+        'noir-gray': '#333333',         // Borders, dividers
+        'noir-yellow': '#FFD700',       // Primary accent (gold)
+        'noir-purple': '#A855F7',       // Secondary accent (purple)
+        'noir-yellow-dim': '#B8860B',   // Dark gold for hover states
+        'noir-glow': '#FFD700',         // Yellow glow
+        // Legacy colors (keeping for compatibility)
         'void-black': '#050505',
         'neon-purple': '#b026ff',
         'neon-cyan': '#00f3ff',
@@ -85,6 +94,14 @@ module.exports = {
       boxShadow: {
         soft: '0 6px 18px rgba(15, 23, 42, 0.06)',
         'neon-glow': '0 0 20px rgba(176, 38, 255, 0.5), 0 0 40px rgba(0, 243, 255, 0.3)',
+        // Tech Noir Glow Effects - Wireframe Colors
+        'glow-yellow': '0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2)',
+        'glow-yellow-sm': '0 0 10px rgba(255, 215, 0, 0.3)',
+        'glow-yellow-lg': '0 0 30px rgba(255, 215, 0, 0.5), 0 0 60px rgba(255, 215, 0, 0.3)',
+        'glow-yellow-intense': '0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2)',
+        'glow-purple': '0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2)',
+        'inner-glow': 'inset 0 0 20px rgba(255, 215, 0, 0.1)',
+        // Neo-Brutalist shadows
         'neo': '5px 5px 0px 0px #000000',
         'neo-sm': '3px 3px 0px 0px #000000',
         'neo-lg': '8px 8px 0px 0px #000000',
@@ -94,8 +111,9 @@ module.exports = {
         'neo-green': '5px 5px 0px 0px #A3E635',
       },
       fontFamily: {
-        sans: ['"Space Grotesk"', 'sans-serif'],
-        mono: ['"Space Mono"', 'monospace'],
+        sans: ['Inter', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+        display: ['Orbitron', 'sans-serif'],
       },
       animation: {
         spotlight: "spotlight 2s ease .75s 1 forwards",
@@ -105,8 +123,23 @@ module.exports = {
         "pulse-glow": "pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "shake": "shake 0.5s cubic-bezier(.36,.07,.19,.97) both",
         "float-hard": "float-hard 4s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "flicker": "flicker 0.15s infinite",
+        "scan-line": "scan-line 8s linear infinite",
       },
       keyframes: {
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 20px rgba(255, 215, 0, 0.4)" },
+          "50%": { boxShadow: "0 0 30px rgba(255, 215, 0, 0.6), 0 0 50px rgba(255, 215, 0, 0.3)" },
+        },
+        "flicker": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
+        "scan-line": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100vh)" },
+        },
         shake: {
           "10%, 90%": { transform: "translate3d(-1px, 0, 0)" },
           "20%, 80%": { transform: "translate3d(2px, 0, 0)" },

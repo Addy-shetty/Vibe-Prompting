@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.2.2",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.11.2",
@@ -17,6 +18,7 @@
     "@vercel/analytics": "^1.5.0",
     "clsx": "^2.0.0",
     "framer-motion": "^10.18.0",
+    "gsap": "^3.14.2",
     "lucide-react": "^0.553.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -31,6 +33,7 @@
     "@types/react-dom": "^18.0.11",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.14",
+    "baseline-browser-mapping": "^2.9.19",
     "postcss": "^8.4.24",
     "tailwindcss": "^3.4.8",
     "terser": "^5.44.1",

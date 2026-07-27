@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&family=Orbitron:wght@400..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,93 +6,189 @@
 
 @layer base {
   :root {
-    --background: 45 100% 98%; /* #FFFDF5 - Off-white Neo-Brutalist BG */
-    --foreground: 0 0% 0%; /* Pure Black */
-    --card: 0 0% 100%; /* White cards */
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 0 0% 0%; /* Pure Black for primary */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 82 89% 55%; /* Acid Green #A3E635 */
-    --secondary-foreground: 0 0% 0%;
-    --muted: 45 100% 96%; /* Soft Pastel Yellow #FEFCE8 */
-    --muted-foreground: 0 0% 40%;
-    --accent: 240 100% 65%; /* Electric Blue #4D4DFF */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 70%; /* Hyper-Pink #FF6B6B */
-    --destructive-foreground: 0 0% 0%;
-    --border: 0 0% 0%; /* Pure Black borders */
-    --input: 0 0% 100%;
-    --ring: 240 100% 65%;
-    --radius: 4px; /* Sharp Neo-Brutalist corners */
-  }
-
-  .dark {
-    --background: 0 0% 5%; /* Dark Neo-Brutalist BG */
-    --foreground: 0 0% 100%;
-    --card: 0 0% 10%;
+    /* Tech Noir Theme - Exact Wireframe Specifications */
+    --background: 0 0% 4%;        /* #0A0A0A - Primary Background */
+    --foreground: 0 0% 100%;      /* #FFFFFF - Text Primary */
+    --card: 0 0% 10%;            /* #1A1A1A - Secondary Background */
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 100%;
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 82 89% 55%; /* Acid Green */
-    --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 240 100% 65%; /* Electric Blue */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 70%; /* Hyper-Pink */
-    --destructive-foreground: 0 0% 0%;
-    --border: 0 0% 100%; /* White borders in dark mode */
-    --input: 0 0% 15%;
-    --ring: 240 100% 65%;
+    --primary: 48 100% 50%;      /* #FFD700 - Yellow/Gold Primary Accent */
+    --primary-foreground: 0 0% 4%;
+    --secondary: 271 76% 65%;    /* #A855F7 - Purple Secondary Accent */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 63%; /* #A1A1AA - Text Secondary */
+    --accent: 48 100% 50%;       /* Yellow accent */
+    --accent-foreground: 0 0% 4%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;          /* #333333 - Borders */
+    --input: 0 0% 4%;            /* #0A0A0A - Input background */
+    --ring: 48 100% 50%;         /* Yellow focus ring */
+    --radius: 12px;              /* 12px border radius from wireframes */
+  }
+
+  /* No light mode - Tech Noir is always dark */
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
   }
 }
 
 @layer base {
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-noir-black text-white font-sans antialiased;
+    background-color: #0A0A0A;
   }
   
-  /* Neo-Brutalist Typography Enhancements */
+  /* Tech Noir Typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-black uppercase tracking-tighter;
+    @apply font-display font-bold uppercase tracking-wide;
   }
   
   strong, b {
-    @apply font-black;
+    @apply font-bold;
+  }
+
+  /* Selection - Wireframe Colors */
+  ::selection {
+    background: #FFD700;
+    color: #0A0A0A;
   }
 }
 
-/* Neo-Brutalist Utility Classes */
+/* Tech Noir Utility Classes */
 @layer components {
+  /* Tech Noir Buttons - Wireframe Style */
+  .noir-btn {
+    @apply px-6 py-3 font-display font-bold uppercase tracking-wider transition-all duration-300;
+  }
+
+  .noir-btn-primary {
+    @apply noir-btn bg-noir-yellow text-noir-black border-2 border-black;
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+
+  .noir-btn-primary:hover {
+    box-shadow: 6px 6px 0px 0px #000000;
+    transform: translate(-2px, -2px);
+  }
+
+  .noir-btn-primary:active {
+    box-shadow: 0px 0px 0px 0px #000000;
+    transform: translate(2px, 2px);
+  }
+
+  .noir-btn-secondary {
+    @apply noir-btn border-2 border-noir-yellow text-noir-yellow bg-transparent;
+    box-shadow: 4px 4px 0px 0px #FFD700;
+  }
+
+  .noir-btn-secondary:hover {
+    @apply bg-noir-yellow/10;
+    box-shadow: 6px 6px 0px 0px #FFD700;
+    transform: translate(-2px, -2px);
+  }
+
+  /* Tech Noir Input - Wireframe Style */
+  .noir-input {
+    @apply w-full px-4 py-3 bg-noir-black border-2 border-noir-gray text-white font-mono rounded-lg;
+    @apply placeholder:text-neutral-500 focus:outline-none transition-all duration-300;
+  }
+
+  .noir-input:focus {
+    @apply border-noir-yellow;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  }
+
+  /* Tech Noir Card - Wireframe Style */
+  .noir-card {
+    @apply bg-noir-dark border-2 border-noir-gray p-6 rounded-xl backdrop-blur-sm transition-all duration-300;
+  }
+
+  .noir-card:hover {
+    @apply border-noir-yellow;
+    box-shadow: 4px 4px 0px 0px #FFD700;
+    transform: translate(-2px, -2px);
+  }
+
+  /* Tech Noir Glow Effects */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+
+  .text-glow-intense {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.5), 0 0 50px rgba(255, 215, 0, 0.3);
+  }
+
+  /* Scan Line Effect */
+  .scan-lines::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Grid Background - Wireframe Style */
+  .noir-grid-bg {
+    background-image: 
+      linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Legacy neo-brutalist classes - kept for compatibility */
   .neo-button {
-    @apply border-3 border-black bg-white px-6 py-3 font-black uppercase tracking-wider text-black shadow-neo transition-all duration-150;
-    @apply hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px];
+    @apply noir-btn-primary;
   }
   
   .neo-button-primary {
-    @apply neo-button bg-neo-blue text-white hover:bg-neo-pink;
+    @apply noir-btn-primary;
   }
   
   .neo-button-secondary {
-    @apply neo-button bg-neo-green text-black hover:bg-neo-sunshine;
+    @apply noir-btn-secondary;
   }
   
   .neo-input {
-    @apply border-3 border-black bg-white px-4 py-3 font-mono text-black shadow-neo-sm focus:outline-none focus:shadow-neo focus:translate-x-[1px] focus:translate-y-[1px] transition-all;
+    @apply noir-input;
   }
   
   .neo-card {
-    @apply border-3 border-black bg-white p-6 shadow-neo transition-all duration-200;
-    @apply hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px];
+    @apply noir-card;
   }
   
   .neo-badge {
-    @apply inline-flex items-center gap-2 border-2 border-black px-4 py-2 font-black uppercase text-sm shadow-neo-sm;
+    @apply inline-flex items-center gap-2 border-2 border-noir-yellow/50 px-4 py-2 font-display uppercase text-sm text-noir-yellow bg-noir-yellow/10;
   }
+}
+
+/* Custom Scrollbar - Tech Noir Wireframe Colors */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FFD700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 /* Marquee Animation for scrolling elements */

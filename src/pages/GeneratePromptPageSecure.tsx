@@ -9,23 +9,25 @@ import toast from 'react-hot-toast'
 const TIER_INFO = {
   basic: {
     name: 'Basic',
-    cost: 5,
-    description: 'Simple prompt enhancement with clarity improvements',
-    color: 'bg-neo-yellow',
+    generations: 5,
+    description: 'Simple, clear prompt enhancement',
+    features: ['Core concept', 'Tech stack', 'Basic reqs'],
   },
   advanced: {
     name: 'Advanced',
-    cost: 3,
-    description: 'Detailed prompt with context, examples, and best practices',
-    color: 'bg-neo-blue',
+    generations: 3,
+    description: 'Detailed specs with examples',
+    features: ['Detailed specs', 'Error handling', 'Best practices'],
   },
   expert: {
     name: 'Expert',
-    cost: 2,
-    description: 'Production-grade prompt with comprehensive technical details',
-    color: 'bg-neo-pink',
+    generations: 2,
+    description: 'Production-grade with full system design',
+    features: ['Full system design', 'Tests & QA', 'Deploy guide'],
   },
 }
+
+const COST_PER_GENERATION = 1
 
 export default function GeneratePromptPageSecure() {
   const navigate = useNavigate()
@@ -33,7 +35,7 @@ export default function GeneratePromptPageSecure() {
   const { credits, tier, loading: creditsLoading, refetch: refetchCredits } = useCredits()
   
   const [input, setInput] = useState('')
-  const [selectedTier, setSelectedTier] = useState<'basic' | 'advanced' | 'expert'>('basic')
+  const [selectedTier, setSelectedTier] = useState<'basic' | 'advanced' | 'expert'>('advanced')
   const [result, setResult] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -53,8 +55,8 @@ export default function GeneratePromptPageSecure() {
       return
     }
 
-    // Check credits
-    const requiredCredits = TIER_INFO[selectedTier].cost
+    // Check credits - each generation costs 1 credit
+    const requiredCredits = COST_PER_GENERATION
     if (credits < requiredCredits) {
       setError(
         `Insufficient credits. You need ${requiredCredits} credits but have ${credits}. ` +
@@ -91,7 +93,7 @@ export default function GeneratePromptPageSecure() {
         // Handle specific error cases
         if (response.error === 'insufficient_credits') {
           setError(
-            `Insufficient credits. You need ${requiredCredits} credits but have ${response.currentCredits || 0}.`
+            `Insufficient credits. You need ${requiredCredits} credits.`
           )
         } else if (response.error === 'rate_limit_exceeded') {
           setError(
@@ -124,61 +126,33 @@ export default function GeneratePromptPageSecure() {
   }
 
   return (
-    <div className="min-h-screen py-20 px-6">
+    <div className="min-h-screen py-20 px-6 bg-noir-black">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-5xl font-black uppercase mb-4 tracking-tighter">
-            Generate Enhanced Prompt
+          <h1 className="text-5xl font-black uppercase mb-4 tracking-tighter text-white">
+            Generate Prompt
           </h1>
-          <div className="flex items-center gap-4 font-mono font-bold">
-            <span className="text-lg">
-              Credits: <span className="text-neo-pink text-2xl">{credits}</span>
+          <div className="flex items-center gap-4 font-mono font-bold text-lg">
+            <span className="text-neutral-400">
+              Credits: <span className="text-noir-yellow text-2xl">{credits}</span>
             </span>
-            <span className="text-lg">
-              Tier: <span className="text-neo-blue uppercase">{tier}</span>
+            <span className="text-neutral-600">|</span>
+            <span className="text-neutral-400">
+              Tier: <span className="text-noir-purple uppercase">{tier || 'Free'}</span>
             </span>
           </div>
         </div>
 
-        {/* Tier Selection */}
+        {/* Step 1: Input */}
         <div className="mb-8">
-          <h3 className="text-2xl font-black uppercase mb-4 tracking-wider">Select Quality Tier</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(Object.keys(TIER_INFO) as Array<keyof typeof TIER_INFO>).map((t) => {
-              const info = TIER_INFO[t]
-              const isSelected = selectedTier === t
-              const canAfford = credits >= info.cost
-              
-              return (
-                <button
-                  key={t}
-                  onClick={() => setSelectedTier(t)}
-                  disabled={!canAfford}
-                  className={`p-6 border-3 border-black font-black uppercase transition-all rounded-neo shadow-neo ${
-                    isSelected
-                      ? `${info.color} text-black`
-                      : canAfford
-                      ? 'bg-white text-black hover:bg-neo-yellow'
-                      : 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed'
-                  } ${!canAfford ? '' : 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'}`}
-                >
-                  <div className="text-xl mb-2">{info.name}</div>
-                  <div className="text-sm font-mono mb-3">{info.cost} credit{info.cost > 1 ? 's' : ''}</div>
-                  <div className="text-xs font-mono font-normal normal-case leading-relaxed">
-                    {info.description}
-                  </div>
-                </button>
-              )
-            })}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-noir-yellow font-mono text-sm font-bold">STEP 1:</span>
+            <label className="text-xl font-black uppercase tracking-wider text-white">
+              ENTER YOUR IDEA
+            </label>
           </div>
-        </div>
-
-        {/* Input */}
-        <div className="mb-8">
-          <label className="block text-xl font-black uppercase mb-3 tracking-wider">
-            Your Prompt Idea
-          </label>
+          <p className="text-neutral-500 font-mono text-sm mb-3">Describe what you need help with...</p>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -186,7 +160,7 @@ export default function GeneratePromptPageSecure() {
               // Ctrl+Enter or Cmd+Enter to generate
               if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault()
-                if (!loading && input.trim() && credits >= TIER_INFO[selectedTier].cost) {
+                if (!loading && input.trim() && credits >= COST_PER_GENERATION) {
                   handleGenerate()
                 }
               }
@@ -194,27 +168,80 @@ export default function GeneratePromptPageSecure() {
             placeholder="Enter your prompt idea... (e.g., 'Build a React dashboard with authentication')"
             rows={6}
             maxLength={10000}
-            className="w-full p-6 border-3 border-black font-mono font-bold text-lg rounded-neo shadow-neo focus:outline-none focus:ring-4 focus:ring-neo-pink bg-white"
+            className="w-full p-6 bg-noir-black border-2 border-noir-gray text-white font-mono font-bold text-lg rounded-xl focus:outline-none focus:border-noir-yellow focus:ring-4 focus:ring-noir-yellow/20 transition-all placeholder:text-neutral-600"
           />
           <div className="mt-2 flex justify-between items-center">
             <span className="text-sm font-mono text-neutral-500">
-              Press <kbd className="px-1.5 py-0.5 bg-neutral-200 rounded text-xs">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 bg-neutral-200 rounded text-xs">Enter</kbd> to generate
+              Press <kbd className="px-1.5 py-0.5 bg-noir-dark rounded text-xs text-neutral-400">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 bg-noir-dark rounded text-xs text-neutral-400">Enter</kbd> to generate
             </span>
             <span className={`text-sm font-mono font-bold ${
-              input.length > 9000 ? 'text-red-600' : 
+              input.length > 9000 ? 'text-red-500' : 
               input.length > 7500 ? 'text-orange-500' : 
-              input.length > 5000 ? 'text-yellow-600' : 'text-neutral-500'
+              input.length > 5000 ? 'text-noir-yellow' : 'text-neutral-500'
             }`}>
               {input.length.toLocaleString()} / 10,000
             </span>
           </div>
         </div>
 
+        {/* Step 2: Tier Selection */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-noir-yellow font-mono text-sm font-bold">STEP 2:</span>
+            <h3 className="text-xl font-black uppercase tracking-wider text-white">
+              CHOOSE PROMPT TIER
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {(Object.keys(TIER_INFO) as Array<keyof typeof TIER_INFO>).map((t) => {
+              const info = TIER_INFO[t]
+              const isSelected = selectedTier === t
+              const canAfford = credits >= COST_PER_GENERATION
+              
+              return (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTier(t)}
+                  disabled={!canAfford}
+                  className={`p-6 border-2 rounded-xl transition-all text-left ${
+                    isSelected
+                      ? 'border-noir-yellow bg-noir-yellow/5'
+                      : canAfford
+                      ? 'border-noir-gray bg-noir-dark hover:border-noir-yellow/50'
+                      : 'border-neutral-800 bg-neutral-900/50 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  <div className={`text-lg font-bold mb-2 ${isSelected ? 'text-noir-yellow' : 'text-white'}`}>
+                    {info.name}
+                  </div>
+                  <div className="text-3xl font-black text-noir-yellow mb-1">{info.generations}</div>
+                  <div className="text-xs font-mono text-neutral-500 mb-2">GENERATIONS PER CREDIT</div>
+                  <div className="text-sm font-mono text-neutral-400 mb-3">
+                    {credits} generations possible with current credits
+                  </div>
+                  <ul className="space-y-1">
+                    {info.features.map((feature) => (
+                      <li key={feature} className="text-xs text-neutral-400 font-mono">
+                        • {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  {isSelected && (
+                    <div className="mt-3 text-xs font-bold text-noir-yellow uppercase tracking-wider">
+                      SELECTED
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Generate Button */}
         <button
           onClick={handleGenerate}
-          disabled={loading || !input.trim() || credits < TIER_INFO[selectedTier].cost || creditsLoading}
-          className="w-full bg-neo-pink text-white py-6 font-black uppercase text-xl border-3 border-black shadow-neo hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3 rounded-neo mb-6"
+          disabled={loading || !input.trim() || credits < COST_PER_GENERATION || creditsLoading}
+          className="w-full bg-noir-yellow text-noir-black py-6 font-black uppercase text-xl border-2 border-black shadow-[4px_4px_0px_0px_#000000] hover:shadow-[6px_6px_0px_0px_#000000] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none flex items-center justify-center gap-3 rounded-xl mb-6"
         >
           {loading ? (
             <>
@@ -224,63 +251,89 @@ export default function GeneratePromptPageSecure() {
           ) : (
             <>
               <Sparkles className="w-6 h-6" />
-              Generate Enhanced Prompt ({TIER_INFO[selectedTier].cost} credit{TIER_INFO[selectedTier].cost > 1 ? 's' : ''})
+              ⚡ GENERATE (1 CREDIT)
             </>
           )}
         </button>
 
+        {/* Credit Info */}
+        <div className="text-center text-sm font-mono text-neutral-400 mb-6 space-y-2">
+          <div>
+            This generation uses: <span className="text-noir-yellow font-bold">1</span> credit
+          </div>
+          <div>
+            You can generate <span className="text-white font-bold">{credits}</span> more prompts
+          </div>
+          <div className="text-neutral-500">
+            Remaining after this: <span className="text-neutral-300">{credits - 1}</span> credits
+          </div>
+        </div>
+
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-6 bg-red-100 border-3 border-red-600 rounded-neo flex items-start gap-4 shadow-neo">
-            <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
-            <div className="font-mono font-bold text-red-800 leading-relaxed">{error}</div>
+          <div className="mb-6 p-6 bg-red-500/10 border-2 border-red-500 rounded-xl flex items-start gap-4">
+            <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
+            <div className="font-mono font-bold text-red-400 leading-relaxed">{error}</div>
           </div>
         )}
 
-        {/* Result Display */}
+        {/* Result Display - Terminal Style */}
         {result && (
-          <div className="p-8 bg-neo-green border-3 border-black rounded-neo shadow-neo-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-black uppercase tracking-wider">✨ Enhanced Prompt</h3>
-              <button
-                onClick={handleCopy}
-                className="px-4 py-2 bg-black text-white font-black uppercase border-3 border-black hover:bg-neutral-800 transition-all flex items-center gap-2 rounded-neo"
-              >
-                {copied ? (
-                  <>
-                    <CheckCheck className="w-4 h-4" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy
-                  </>
-                )}
-              </button>
+          <div className="border-2 border-noir-gray rounded-xl overflow-hidden bg-noir-dark">
+            {/* Terminal Header */}
+            <div className="bg-noir-black border-b-2 border-noir-gray px-4 py-3 flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500 border border-noir-black"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500 border border-noir-black"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500 border border-noir-black"></div>
+              </div>
+              <span className="font-mono text-xs text-neutral-500">generated-prompt.txt</span>
             </div>
             
-            <div className="p-6 bg-white border-2 border-black rounded-neo mb-4">
-              <p className="font-mono font-bold text-base leading-relaxed whitespace-pre-wrap">
-                {result}
-              </p>
-            </div>
+            {/* Content */}
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-black uppercase tracking-wider text-white">📝 Generated Prompt</h3>
+                <button
+                  onClick={handleCopy}
+                  className="px-4 py-2 bg-noir-yellow text-noir-black font-black uppercase border-2 border-black hover:bg-noir-yellow-dim transition-all flex items-center gap-2 rounded-lg"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCheck className="w-4 h-4" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              <div className="p-6 bg-noir-black border border-noir-gray rounded-lg mb-4">
+                <p className="font-mono text-base leading-relaxed whitespace-pre-wrap text-neutral-300">
+                  {result}
+                </p>
+              </div>
 
-            <div className="flex items-center justify-between text-sm font-mono font-bold text-black/60">
-              {provider && (
-                <span>Generated using: <span className="uppercase">{provider}</span></span>
-              )}
-              <span className="text-neo-pink">
-                Credits remaining: <span className="text-lg">{credits}</span>
-              </span>
+              <div className="flex items-center justify-between text-sm font-mono text-neutral-500">
+                {provider && (
+                  <span>Generated using: <span className="text-noir-purple uppercase">{provider}</span></span>
+                )}
+                <span className="text-noir-yellow">
+                  Credits remaining: <span className="text-lg font-bold">{credits}</span>
+                </span>
+              </div>
             </div>
           </div>
         )}
 
         {/* Help Text */}
-        <div className="mt-8 p-6 bg-white border-3 border-black rounded-neo shadow-neo">
-          <h4 className="text-lg font-black uppercase mb-3">💡 Tips for Better Results</h4>
-          <ul className="space-y-2 font-mono font-bold text-sm">
+        <div className="mt-8 p-6 bg-noir-dark border border-noir-gray rounded-xl">
+          <h4 className="text-lg font-black uppercase mb-3 text-white">💡 Tips for Better Results</h4>
+          <ul className="space-y-2 font-mono text-sm text-neutral-400">
             <li>• Be specific about what you want to achieve</li>
             <li>• Mention technologies or frameworks you're using</li>
             <li>• Include context about your use case</li>
