@@ -8,7 +8,8 @@ import CreditDisplay from '@/components/CreditDisplay'
 import FeedbackModal from '@/components/FeedbackModal'
 
 // ── Guest links (shown to anonymous visitors) ──
-const GUEST_LINKS = [
+type NavLink = { label: string; to: string; highlight?: boolean }
+const GUEST_LINKS: NavLink[] = [
   { label: 'Explore', to: '/explore' },
   { label: 'How It Works', to: '/#how-it-works' },
   { label: 'Pricing', to: '/pricing' },
@@ -16,7 +17,7 @@ const GUEST_LINKS = [
 ]
 
 // ── Authenticated links (shown to logged-in users) ──
-const AUTH_LINKS = [
+const AUTH_LINKS: NavLink[] = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Generate', to: '/generate', highlight: true },
   { label: 'My Prompts', to: '/prompts' },
@@ -152,7 +153,7 @@ export default function Navbar() {
               <>
                 {/* Credits badge */}
                 <div className="hidden sm:block">
-                  <CreditDisplay />
+                  <CreditDisplay theme="dark" />
                 </div>
 
                 {/* Avatar + Dropdown */}
