@@ -14,7 +14,6 @@ const CREDIT_COSTS = {
 export interface GeneratePromptParams {
   userInput: string
   tier: 'basic' | 'advanced' | 'expert'
-  category?: string
   metadata?: Record<string, unknown>
 }
 
@@ -60,7 +59,6 @@ export async function generatePrompt(
         body: {
           userInput: params.userInput,
           tier: params.tier,
-          category: params.category || 'default',
           requestId,
           metadata: {
             ...params.metadata,
@@ -163,7 +161,7 @@ async function fallbackGenerate(
       user_id: userId,
       title: params.userInput.substring(0, 200),
       content: generatedPrompt,
-      category: params.category || 'Generated',
+      category: 'Generated',
       tier_used: params.tier,
       credits_used: creditsNeeded,
       is_public: false,
@@ -176,26 +174,6 @@ async function fallbackGenerate(
       creditsRemaining: creditResult.credits_remaining,
       promptId: promptData?.id,
       tier: params.tier,
-export interface SubmitFeedbackParams {
-  promptId: string
-  rating?: number
-  copied?: boolean
-  reused?: boolean
-}
-
-export async function submitFeedback(params: SubmitFeedbackParams) {
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Not authenticated')
-
-    const { error } = await supabase.functions.invoke('submit-feedback', {
-      body: params,
-    })
-    return { success: !error, error: error?.message }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Failed' }
-  }
-}
       provider: 'fallback',
     }
   } catch (err) {
@@ -211,6 +189,7 @@ export async function submitFeedback(params: SubmitFeedbackParams) {
 /**
  * Fetch user's prompt history
  */
+export interface SubmitFeedbackParams {  promptId: string  rating?: number  copied?: boolean  reused?: boolean}export async function submitFeedback(params: SubmitFeedbackParams) {  try {    const { data: { session } } = await supabase.auth.getSession()    if (!session) throw new Error("Not authenticated")    const { error } = await supabase.functions.invoke("submit-feedback", {      body: params,    })    return { success: !error, error: error?.message }  } catch (err) {    return { success: false, error: err instanceof Error ? err.message : "Failed" }  }}
 export async function getPromptHistory(limit = 20) {
   try {
     const { data, error } = await supabase
