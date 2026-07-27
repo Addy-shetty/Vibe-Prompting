@@ -1,7 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
-import { buildFewShotPrompt } from './few-shot.ts'
-import { VALID_CATEGORIES, DEFAULT_CATEGORY } from './category-prompts.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +17,6 @@ interface GenerateRequest {
   userInput: string
   tier: 'basic' | 'advanced' | 'expert'
   requestId: string
-  category?: string
   metadata?: Record<string, unknown>
 }
 
@@ -105,12 +102,7 @@ serve(async (req) => {
 
     // 2. Parse request body
     const body: GenerateRequest = await req.json()
-    const { userInput, tier = 'basic', requestId, category: rawCategory, metadata = {} } = body
-
-    // Resolve and validate category (backward-compatible: missing/invalid → default)
-    const category = rawCategory && VALID_CATEGORIES.has(rawCategory)
-      ? rawCategory
-      : DEFAULT_CATEGORY
+    const { userInput, tier = 'basic', requestId, metadata = {} } = body
 
     if (!userInput || !requestId) {
       return new Response(
@@ -199,29 +191,7 @@ serve(async (req) => {
       )
     }
 
-    // 8. Build few-shot prompt with category-aware examples
-    let fullPrompt: string
-    let examplesUsed: string[] = []
-
-    try {
-      const fewShotResult = await buildFewShotPrompt(
-        supabaseAdmin,
-        userInput,
-        category,
-        tier
-      )
-      fullPrompt = fewShotResult.fullPrompt
-      examplesUsed = fewShotResult.examplesUsed
-      console.log(
-        `Few-shot built: ${examplesUsed.length} examples ` +
-        `(same:${fewShotResult.source.same_category} cross:${fewShotResult.source.cross_category} seed:${fewShotResult.source.seed})`
-      )
-    } catch (fewShotError) {
-      console.error('Few-shot build failed, using simple prompt:', fewShotError)
-      fullPrompt = `Transform this input into an optimized prompt:\n\n"${userInput}"\n\nProvide ONLY the improved prompt, no explanations.`
-    }
-
-    // 9. Generate prompt using LLM
+    // 8. Generate prompt using LLM
     let generatedPrompt: string
     let provider: string
 
@@ -232,6 +202,12 @@ serve(async (req) => {
         throw new Error('GEMINI_API_KEY not configured')
       }
 
+      const systemPrompt = tier === 'basic'
+        ? 'You are a helpful assistant that improves user prompts by adding clarity and context.'
+        : tier === 'advanced'
+        ? 'You are an expert prompt engineer. Transform the user input into a highly detailed, context-rich prompt optimized for AI systems. Include role definition, constraints, output format, and examples.'
+        : 'You are a world-class prompt architect. Create a production-grade, multi-layered prompt with: expert persona, detailed requirements, edge case handling, structured output format, validation criteria, and concrete examples. Optimize for technical accuracy and actionable results.'
+
       const geminiResponse = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
         {
@@ -240,7 +216,7 @@ serve(async (req) => {
           body: JSON.stringify({
             contents: [{
               parts: [{
-                text: fullPrompt
+                text: `${systemPrompt}\n\nTransform this prompt:\n\n"${userInput}"\n\nProvide ONLY the improved prompt, no explanations.`
               }]
             }],
             generationConfig: {
@@ -273,6 +249,12 @@ serve(async (req) => {
           throw new Error('No fallback provider available')
         }
 
+        const systemPrompt = tier === 'basic'
+          ? 'You are a helpful assistant that improves user prompts.'
+          : tier === 'advanced'
+          ? 'You are an expert prompt engineer. Create detailed, context-rich prompts.'
+          : 'You are a world-class prompt architect. Create production-grade prompts with comprehensive details.'
+
         const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -283,7 +265,8 @@ serve(async (req) => {
           body: JSON.stringify({
             model: 'meta-llama/llama-3.2-3b-instruct:free',
             messages: [
-              { role: 'user', content: fullPrompt }
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Transform this prompt:\n\n"${userInput}"\n\nProvide ONLY the improved prompt.` }
             ],
             max_tokens: tier === 'basic' ? 500 : tier === 'advanced' ? 1000 : 2000,
           }),
@@ -310,98 +293,23 @@ serve(async (req) => {
       }
     }
 
-    // 9b. Refinement loop: evaluate quality and retry if score is low
-    let bestPrompt = generatedPrompt
-    let bestScore = 0
-    let refinementRounds = 0
-    const MAX_REFINEMENTS = 2
-    const QUALITY_THRESHOLD = 0.6
-    let extraCredits = 0
-
-    try {
-      const evalReq = JSON.stringify({
-        contents: [{ parts: [{ text: "Rate this prompt 0.0-1.0 on: specificity, structure, actionability, clarity.\n\nPrompt:\n\"\"\"\n" + generatedPrompt.replace(/"/g,'\\"').replace(/\n/g,'\\n') + "\n\"\"\"\n\nReturn ONLY JSON: {\"specificity\":0.X,\"structure\":0.X,\"actionability\":0.X,\"clarity\":0.X}" }] }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 128 }
-      })
-      const evalResp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" + (Deno.env.get("GEMINI_API_KEY") ?? ""), { method: "POST", headers: { "Content-Type": "application/json" }, body: evalReq })
-      if (evalResp.ok) {
-        const d = await evalResp.json()
-        const r = d.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
-        const j = r.trim().startsWith("{") ? r.trim() : (r.match(/```(?:json)?\s*([\s\S]*?)```/)?.[1]?.trim() ?? r.match(/\{[\s\S]*\}/)?.[0] ?? "")
-        if (j) {
-          const s = JSON.parse(j)
-          const dims = ["specificity","structure","actionability","clarity"]
-          bestScore = Math.round(dims.reduce((a,d) => a + Math.max(0,Math.min(1,Number(s[d])||0.5)), 0) / 4 * 100) / 100
-        }
-      }
-    } catch { /* eval is best-effort, continue with refinement if needed */ }
-
-    while (bestScore < QUALITY_THRESHOLD && refinementRounds < MAX_REFINEMENTS) {
-      refinementRounds++
-      console.log("Refinement round " + refinementRounds + ": score=" + bestScore)
-
-      try {
-        const ec = await supabaseAdmin.rpc("consume_credits", { p_user_id: user.id, p_amount: 1, p_type: "refinement", p_description: "Refinement round " + refinementRounds, p_request_id: requestId + "-r" + refinementRounds })
-        if (ec.data?.success) extraCredits++
-
-        const refineReq = JSON.stringify({
-          contents: [{ parts: [{ text: "The previous response scored only " + Math.round(bestScore*100) + "%. Please improve it significantly by:\n- Adding specific tools, techniques, and concrete examples\n- Structuring with numbered sections and bullet points\n- Making every section actionable with explicit steps\n- Ensuring crystal-clear language\n\nOriginal task: " + userInput + "\n\nPrevious attempt:\n" + generatedPrompt }] }],
-          generationConfig: { temperature: 0.8, maxOutputTokens: tier === "basic" ? 600 : tier === "advanced" ? 1200 : 2400 }
-        })
-        const refineResp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" + (Deno.env.get("GEMINI_API_KEY") ?? ""), { method: "POST", headers: { "Content-Type": "application/json" }, body: refineReq })
-
-        if (refineResp.ok) {
-          const rd = await refineResp.json()
-          const refined = rd.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
-          if (refined.trim()) {
-            const reEvalReq = JSON.stringify({
-              contents: [{ parts: [{ text: "Rate this prompt 0.0-1.0 on: specificity, structure, actionability, clarity.\n\nPrompt:\n\"\"\"\n" + refined.replace(/"/g,'\\"').replace(/\n/g,'\\n') + "\n\"\"\"\n\nReturn ONLY JSON: {\"specificity\":0.X,\"structure\":0.X,\"actionability\":0.X,\"clarity\":0.X}" }] }],
-              generationConfig: { temperature: 0.2, maxOutputTokens: 128 }
-            })
-            const reResp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" + (Deno.env.get("GEMINI_API_KEY") ?? ""), { method: "POST", headers: { "Content-Type": "application/json" }, body: reEvalReq })
-            if (reResp.ok) {
-              const rrd = await reResp.json()
-              const rr = rrd.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
-              const rj = rr.trim().startsWith("{") ? rr.trim() : (rr.match(/```(?:json)?\s*([\s\S]*?)```/)?.[1]?.trim() ?? rr.match(/\{[\s\S]*\}/)?.[0] ?? "")
-              if (rj) {
-                const rs = JSON.parse(rj)
-                const dims = ["specificity","structure","actionability","clarity"]
-                const ns = Math.round(dims.reduce((a,d) => a + Math.max(0,Math.min(1,Number(rs[d])||0.5)), 0) / 4 * 100) / 100
-                if (ns > bestScore) { bestScore = ns; bestPrompt = refined; generatedPrompt = refined; provider = provider + "+refined" }
-              }
-            }
-          }
-        }
-      } catch (refineErr) { console.error("Refinement round " + refinementRounds + " failed:", refineErr); break }
-    }
-
-    if (refinementRounds > 0) {
-      creditsToConsume += extraCredits
-      console.log("Refinement done: " + refinementRounds + " rounds, final score=" + bestScore + ", extra credits=" + extraCredits)
-    }    // 10. Save prompt to database
+    // 9. Save prompt to database
     const { data: promptData, error: saveError } = await supabaseAdmin.from('prompts').insert({
       user_id: user.id,
       title: userInput.substring(0, 200),
       content: generatedPrompt,
-      category,
+      category: metadata?.category || 'General',
       tier_used: tier,
-      credits_used: creditsToConsume, quality_score: bestScore,
+      credits_used: creditsToConsume,
       is_public: false,
       tags: metadata?.tags || [],
-      generation_metadata: { refinement_rounds: refinementRounds, best_quality_score: bestScore,
-        examples_used: examplesUsed,
-        provider,
-        tier,
-        request_id: requestId,
-        ...metadata,
-      },
     }).select().single()
 
     if (saveError) {
       console.error('Failed to save prompt:', saveError)
     }
 
-    // 11. Return success response
+    // 10. Return success response
     return new Response(
       JSON.stringify({
         success: true,
@@ -409,10 +317,8 @@ serve(async (req) => {
         creditsUsed: creditsToConsume,
         creditsRemaining: creditData.credits_remaining,
         tier,
-        category,
         provider,
         promptId: promptData?.id || null,
-        examplesUsed: examplesUsed.length,
       }),
       {
         status: 200,

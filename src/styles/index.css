@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&family=Orbitron:wght@400..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -205,3 +204,36 @@
   animation-play-state: paused;
 }
 
+
+/* ── Accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible focus ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #FFD700 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* Skip to main content link (hidden until focused) */
+.skip-to-main {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 100;
+  padding: 12px 24px;
+  background: #FFD700;
+  color: #0A0A0A;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+.skip-to-main:focus {
+  top: 0;
+}

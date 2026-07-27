@@ -1,10 +1,28 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, Sparkles, AlertCircle, Copy, CheckCheck } from 'lucide-react'
-import { generatePrompt } from '@/lib/api'
+import { Loader2, Sparkles, AlertCircle, Copy, CheckCheck, Tag } from 'lucide-react'
+import { generatePrompt, submitFeedback } from '@/lib/api'
 import { useCredits } from '@/hooks/useCreditsSecure'
 import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
+
+const CATEGORIES = [
+  { value: 'default', label: 'General (Auto-detect)' },
+  { value: 'bug-bounty', label: 'Bug Bounty' },
+  { value: 'code-generation', label: 'Code Generation' },
+  { value: 'prompt-injection', label: 'Prompt Injection' },
+  { value: 'security-audit', label: 'Security Audit' },
+  { value: 'reconnaissance', label: 'Reconnaissance' },
+  { value: 'fuzzing', label: 'Fuzzing' },
+  { value: 'api-testing', label: 'API Testing' },
+  { value: 'cloud-security', label: 'Cloud Security' },
+  { value: 'devsecops', label: 'DevSecOps' },
+  { value: 'system-design', label: 'System Design' },
+  { value: 'data-analysis', label: 'Data Analysis' },
+  { value: 'content-creation', label: 'Content Creation' },
+  { value: 'debugging', label: 'Debugging' },
+  { value: 'workflow-automation', label: 'Workflow Automation' },
+]
 
 const TIER_INFO = {
   basic: {
@@ -36,10 +54,13 @@ export default function GeneratePromptPageSecure() {
   
   const [input, setInput] = useState('')
   const [selectedTier, setSelectedTier] = useState<'basic' | 'advanced' | 'expert'>('advanced')
+  const [selectedCategory, setSelectedCategory] = useState('default')
   const [result, setResult] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [promptId, setPromptId] = useState<string | null>(null)
+  const [userRating, setUserRating] = useState(0)
   const [provider, setProvider] = useState<string | null>(null)
 
   const handleGenerate = async () => {
@@ -74,6 +95,7 @@ export default function GeneratePromptPageSecure() {
       const response = await generatePrompt({
         userInput: input,
         tier: selectedTier,
+        category: selectedCategory,
         metadata: {
           source: 'web_app',
           timestamp: new Date().toISOString(),
@@ -82,6 +104,7 @@ export default function GeneratePromptPageSecure() {
 
       if (response.success && response.prompt) {
         setResult(response.prompt)
+        if (response.promptId) setPromptId(response.promptId)
         setProvider(response.provider || null)
         
         // Refresh credits to show updated balance
@@ -184,10 +207,32 @@ export default function GeneratePromptPageSecure() {
           </div>
         </div>
 
-        {/* Step 2: Tier Selection */}
+        {/* Step 2: Category Selection */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-noir-yellow font-mono text-sm font-bold">STEP 2:</span>
+            <label className="text-xl font-black uppercase tracking-wider text-white">
+              SELECT CATEGORY
+            </label>
+          </div>
+          <p className="text-neutral-500 font-mono text-sm mb-3">Category-aware prompts use specialized examples for better results.</p>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full p-4 bg-noir-black border-2 border-noir-gray text-white font-mono font-bold text-sm rounded-xl focus:outline-none focus:border-noir-purple focus:ring-4 focus:ring-noir-purple/20 transition-all appearance-none cursor-pointer"
+          >
+            {CATEGORIES.map((cat) => (
+              <option key={cat.value} value={cat.value} className="bg-noir-black text-white">
+                {cat.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Step 3: Tier Selection */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-noir-yellow font-mono text-sm font-bold">STEP 3:</span>
             <h3 className="text-xl font-black uppercase tracking-wider text-white">
               CHOOSE PROMPT TIER
             </h3>

@@ -45,11 +45,17 @@ ${COMPLEXITY_INSTRUCTIONS[complexity]}
 User input: ${userInput}`
 
   const { data, error} = await supabase.functions.invoke('generate-prompt', {
-    body: { prompt: systemPrompt, model }
+    body: {
+      userInput: userInput,
+      tier: complexity,
+      category: category || 'default',
+      requestId: crypto.randomUUID(),
+      metadata: { source: 'ai_lib' },
+    }
   })
 
   if (error) throw new Error(error.message)
-  if (!data?.text) throw new Error('No response from AI')
+  if (!data?.prompt) throw new Error('No response from AI')
 
   // Calculate and log token usage/cost
   if (data.usage) {
@@ -66,7 +72,7 @@ User input: ${userInput}`
     const outputCost = (candidatesTokenCount / 1000000) * outputRate
     const totalCost = inputCost + outputCost
 
-    console.log(`💰 Token Usage (${model}):`, {
+    if (import.meta.env.DEV) { console.log(`💰 Token Usage (${model}):`, {
       input: promptTokenCount,
       output: candidatesTokenCount,
       total: promptTokenCount + candidatesTokenCount,
@@ -79,7 +85,7 @@ User input: ${userInput}`
     }
   }
 
-  return data.text
+  return data.prompt
 }
 
 export async function generatePromptStream(
