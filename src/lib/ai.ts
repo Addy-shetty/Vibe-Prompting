@@ -45,41 +45,21 @@ ${COMPLEXITY_INSTRUCTIONS[complexity]}
 User input: ${userInput}`
 
   const { data, error} = await supabase.functions.invoke('generate-prompt', {
-    body: { prompt: systemPrompt, model }
+    body: {
+      userInput: userInput,
+      tier: complexity,
+      category: category || 'default',
+      requestId: crypto.randomUUID(),
+      metadata: { source: 'ai_lib' },
+    }
   })
 
   if (error) throw new Error(error.message)
-  if (!data?.text) throw new Error('No response from AI')
+  if (!data?.prompt) throw new Error('No response from AI')
 
-  // Calculate and log token usage/cost
-  if (data.usage) {
-    const { promptTokenCount = 0, candidatesTokenCount = 0 } = data.usage
-    
-    // Pricing (Approximate for Google AI Studio)
-    // Gemini 2.0 Flash: Currently free in preview, but using Flash rates for estimation
-    // ~$0.075/1M input
-    const isPro = model.includes('pro')
-    const inputRate = isPro ? 3.50 : 0.075
-    const outputRate = isPro ? 10.50 : 0.30
+  // Token usage tracked server-side
 
-    const inputCost = (promptTokenCount / 1000000) * inputRate
-    const outputCost = (candidatesTokenCount / 1000000) * outputRate
-    const totalCost = inputCost + outputCost
-
-    if (import.meta.env.DEV) console.log("Token usage tracked");
-      input: promptTokenCount,
-      output: candidatesTokenCount,
-      total: promptTokenCount + candidatesTokenCount,
-      estimatedCost: `$${totalCost.toFixed(6)}`
-    })
-
-    // Safety check: Log warning if cost exceeds 5 cents
-    if (totalCost > 0.05) {
-      console.warn('⚠️ High generation cost detected!')
-    }
-  }
-
-  return data.text
+  return data.prompt
 }
 
 export async function generatePromptStream(
