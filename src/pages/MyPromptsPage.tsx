@@ -84,6 +84,9 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function MyPromptsPage() {
   const { theme } = useTheme()
+  if (!user) {
+    return <div className="min-h-screen pt-20 px-6 flex items-center justify-center"><EmptyState icon={Lock} title="Sign in required" description="Sign in to view your prompt library." actionLabel="Sign In" actionTo="/login" /></div>
+  }
   const { user } = useAuth()
   const navigate = useNavigate()
   

@@ -111,7 +111,7 @@ export default function GeneratePromptPageSecure() {
         await refetchCredits()
         
         // Show success feedback
-        console.log(`Generation successful. Credits used: ${response.creditsUsed}, Remaining: ${response.creditsRemaining}`)
+        toast.success(`Generated with ${response.provider || "AI"}! (${response.creditsUsed} credits)`, { icon: "'sparkles'", duration: 4000 })
       } else {
         // Handle specific error cases
         if (response.error === 'insufficient_credits') {
